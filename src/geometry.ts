@@ -4,31 +4,35 @@ import type { Point, Polygon } from './types.js'
 const xOf = (p: Point): number => p[0]
 const yOf = (p: Point): number => p[1]
 
-export const boundingBox = (polygon: Polygon): readonly [Point, Point] => {
-  const xs = R.map(xOf, polygon)
-  const ys = R.map(yOf, polygon)
-  return [
-    [Math.min(...xs), Math.min(...ys)],
-    [Math.max(...xs), Math.max(...ys)],
-  ]
-}
+// Single-reduce bounding box: one pass, no intermediate arrays.
+type BBox = readonly [Point, Point]
+const initBBox: BBox = [
+  [Infinity, Infinity],
+  [-Infinity, -Infinity],
+]
+const expandBBox = ([[lx, ly], [hx, hy]]: BBox, [x, y]: Point): BBox => [
+  [Math.min(lx, x), Math.min(ly, y)],
+  [Math.max(hx, x), Math.max(hy, y)],
+]
+export const boundingBox = (polygon: Polygon): BBox => R.reduce(expandBBox, initBBox, polygon)
 
-// Ray-cast point-in-polygon. Standard crossing-number test.
-// Loop is imperative for clarity and speed; the call site stays composable.
-export const pointInPolygon = R.curry((polygon: Polygon, p: Point): boolean => {
-  const [x, y] = p
-  const n = polygon.length
-  let inside = false
-  for (let i = 0, j = n - 1; i < n; j = i++) {
-    const [xi, yi] = polygon[i]!
-    const [xj, yj] = polygon[j]!
-    const crosses = yi > y !== yj > y
-    if (!crosses) continue
-    const xIntersect = ((xj - xi) * (y - yi)) / (yj - yi) + xi
-    if (x < xIntersect) inside = !inside
+// Ray-cast point-in-polygon. Manually curried so call sites that pre-bind the
+// polygon (`const inside = pointInPolygon(poly)`) are cheap and well-typed.
+export const pointInPolygon =
+  (polygon: Polygon) =>
+  ([x, y]: Point): boolean => {
+    const n = polygon.length
+    let inside = false
+    for (let i = 0, j = n - 1; i < n; j = i++) {
+      const [xi, yi] = polygon[i]!
+      const [xj, yj] = polygon[j]!
+      const crosses = yi > y !== yj > y
+      if (!crosses) continue
+      const xIntersect = ((xj - xi) * (y - yi)) / (yj - yi) + xi
+      if (x < xIntersect) inside = !inside
+    }
+    return inside
   }
-  return inside
-})
 
 // Signed polygon area (shoelace). Positive for counter-clockwise rings.
 export const signedArea = (polygon: Polygon): number => {

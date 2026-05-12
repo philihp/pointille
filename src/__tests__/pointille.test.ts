@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { distributePointsInPolygon } from '../distribute-points-in-polygon.js'
+import pointille from '../index.js'
 import { pointInPolygon } from '../geometry.js'
 import type { Point, Polygon } from '../types.js'
 
@@ -62,76 +62,76 @@ const meanNearestNeighbour = (points: ReadonlyArray<Point>): number => {
   return sum / points.length
 }
 
-describe('distributePointsInPolygon — counts and edges', () => {
+describe('pointille — counts and edges', () => {
   it('returns [] for n = 0', () => {
-    assert.deepEqual(distributePointsInPolygon(unitSquare, 0), [])
+    assert.deepEqual(pointille(unitSquare, 0), [])
   })
   it('returns [] for negative n', () => {
-    assert.deepEqual(distributePointsInPolygon(unitSquare, -3), [])
+    assert.deepEqual(pointille(unitSquare, -3), [])
   })
   it('returns [] for a degenerate polygon (< 3 vertices)', () => {
-    assert.deepEqual(distributePointsInPolygon([[0, 0], [1, 1]], 5), [])
+    assert.deepEqual(pointille([[0, 0], [1, 1]], 5), [])
   })
   it('returns exactly n points for n = 1', () => {
-    const out = distributePointsInPolygon(unitSquare, 1)
+    const out = pointille(unitSquare, 1)
     assert.equal(out.length, 1)
   })
   it('returns exactly n points for n = 25 in a square', () => {
-    assert.equal(distributePointsInPolygon(unitSquare, 25).length, 25)
+    assert.equal(pointille(unitSquare, 25).length, 25)
   })
   it('returns exactly n points for n = 30 in a triangle', () => {
-    assert.equal(distributePointsInPolygon(triangle, 30).length, 30)
+    assert.equal(pointille(triangle, 30).length, 30)
   })
   it('returns exactly n points for n = 20 in a concave L-shape', () => {
-    assert.equal(distributePointsInPolygon(lShape, 20).length, 20)
+    assert.equal(pointille(lShape, 20).length, 20)
   })
 })
 
-describe('distributePointsInPolygon — containment', () => {
+describe('pointille — containment', () => {
   it('all points lie inside the unit square (n=25)', () => {
-    const pts = distributePointsInPolygon(unitSquare, 25)
-    for (const p of pts) assert.ok(pointInPolygon(unitSquare, p), `outside: ${p.join(',')}`)
+    const pts = pointille(unitSquare, 25)
+    for (const p of pts) assert.ok(pointInPolygon(unitSquare)(p), `outside: ${p.join(',')}`)
   })
 
   it('all points lie inside the triangle (n=30)', () => {
-    const pts = distributePointsInPolygon(triangle, 30)
-    for (const p of pts) assert.ok(pointInPolygon(triangle, p), `outside: ${p.join(',')}`)
+    const pts = pointille(triangle, 30)
+    for (const p of pts) assert.ok(pointInPolygon(triangle)(p), `outside: ${p.join(',')}`)
   })
 
   it('all points lie inside the concave L-shape (n=20)', () => {
-    const pts = distributePointsInPolygon(lShape, 20)
-    for (const p of pts) assert.ok(pointInPolygon(lShape, p), `outside: ${p.join(',')}`)
+    const pts = pointille(lShape, 20)
+    for (const p of pts) assert.ok(pointInPolygon(lShape)(p), `outside: ${p.join(',')}`)
   })
 
   it('all points lie inside a circle-approximation (n=40)', () => {
     const circle = circleApprox(64)
-    const pts = distributePointsInPolygon(circle, 40)
-    for (const p of pts) assert.ok(pointInPolygon(circle, p), `outside: ${p.join(',')}`)
+    const pts = pointille(circle, 40)
+    for (const p of pts) assert.ok(pointInPolygon(circle)(p), `outside: ${p.join(',')}`)
   })
 })
 
-describe('distributePointsInPolygon — determinism', () => {
+describe('pointille — determinism', () => {
   it('same inputs → same outputs (square)', () => {
-    const a = distributePointsInPolygon(unitSquare, 25)
-    const b = distributePointsInPolygon(unitSquare, 25)
+    const a = pointille(unitSquare, 25)
+    const b = pointille(unitSquare, 25)
     assert.deepEqual(a, b)
   })
   it('same inputs → same outputs (concave)', () => {
-    const a = distributePointsInPolygon(lShape, 15)
-    const b = distributePointsInPolygon(lShape, 15)
+    const a = pointille(lShape, 15)
+    const b = pointille(lShape, 15)
     assert.deepEqual(a, b)
   })
   it('different haltonOffset gives a different layout', () => {
-    const a = distributePointsInPolygon(unitSquare, 10, { haltonOffset: 1 })
-    const b = distributePointsInPolygon(unitSquare, 10, { haltonOffset: 100 })
+    const a = pointille(unitSquare, 10, { haltonOffset: 1 })
+    const b = pointille(unitSquare, 10, { haltonOffset: 100 })
     assert.notDeepEqual(a, b)
   })
 })
 
-describe('distributePointsInPolygon — distribution quality', () => {
+describe('pointille — distribution quality', () => {
   it('square: nearest-neighbour spacing is non-trivial after relaxation', () => {
     const n = 25
-    const pts = distributePointsInPolygon(unitSquare, n)
+    const pts = pointille(unitSquare, n)
     // For a uniform packing of 25 points in a unit square the ideal grid
     // spacing is 1/sqrt(25) = 0.2. We require min NN >= 0.6 * ideal — i.e.
     // no two points have collapsed onto one another.
@@ -141,7 +141,7 @@ describe('distributePointsInPolygon — distribution quality', () => {
   })
 
   it('square: min NN distance is close to mean NN distance (uniformity)', () => {
-    const pts = distributePointsInPolygon(unitSquare, 36)
+    const pts = pointille(unitSquare, 36)
     const minNN = minNearestNeighbour(pts)
     const meanNN = meanNearestNeighbour(pts)
     // Min should be at least 60% of mean — i.e. not heavily clustered.
@@ -151,7 +151,7 @@ describe('distributePointsInPolygon — distribution quality', () => {
   it('circle: minimum spacing is reasonable', () => {
     const circle = circleApprox(64)
     const n = 30
-    const pts = distributePointsInPolygon(circle, n)
+    const pts = pointille(circle, n)
     // Approximate "ideal" spacing for n points in a disc of area π is
     // sqrt(π/n). Require min NN >= 0.45 * ideal.
     const ideal = Math.sqrt(Math.PI / n)
