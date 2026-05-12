@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>pointille — demo</title>
+  <style>
+    :root {
+      --bg: #fafaf7;
+      --fg: #1a1a1a;
+      --muted: #777;
+      --line: #c8c8c0;
+      --cell: rgba(80, 110, 200, 0.06);
+      --cellEdge: #b6bdcd;
+      --boundary: #1a1a1a;
+      --site: #c2410c;
+    }
+    html, body { background: var(--bg); color: var(--fg); }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      margin: 0; padding: 32px;
+    }
+    h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+    p.sub { color: var(--muted); margin: 0 0 24px; font-size: 13px; }
+    table { border-collapse: collapse; margin: 0 auto; }
+    th, td { padding: 6px; text-align: center; vertical-align: top; }
+    th { font-weight: 600; font-size: 14px; color: var(--fg); border-bottom: 1px solid var(--line); }
+    .cell {
+      position: relative;
+      width: 220px; height: 220px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      box-sizing: content-box;
+    }
+    .cell .label {
+      position: absolute; top: 6px; left: 8px;
+      font-size: 11px; color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    svg { display: block; width: 100%; height: 100%; }
+    svg .cells path {
+      fill: var(--cell);
+      stroke: var(--cellEdge);
+      stroke-width: 0.6;
+    }
+    svg .boundary {
+      fill: none;
+      stroke: var(--boundary);
+      stroke-width: 1.4;
+      stroke-linejoin: round;
+    }
+    svg .sites circle {
+      fill: var(--site);
+      stroke: #fff;
+      stroke-width: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>pointille</h1>
+  <p class="sub">Centroidal Voronoi distribution. Rows: n = 4, 5, 6, 7. Columns: triangle, square, pentagon. Faint cells show each point's Voronoi region clipped to the polygon.</p>
+  <table>
+    <thead><tr><th>Triangle</th><th>Square</th><th>Pentagon</th></tr></thead>
+    <tbody>
+<tr><td><div class="cell"><span class="label">n = 4</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="4 points in polygon">
+  <g class="cells"><path d="M62.26,109.55 L80.39,122.46 L139.64,122.45 L157.74,109.55 L110.00,26.86 Z" /><path d="M132.39,193.14 L206.00,193.14 L157.74,109.55 L139.64,122.45 Z" /><path d="M14.00,193.14 L87.63,193.14 L80.39,122.46 L62.26,109.55 Z" /><path d="M80.39,122.46 L87.63,193.14 L132.39,193.14 L139.64,122.45 Z" /></g>
+  <path class="boundary" d="M14.00,193.14 L206.00,193.14 L110.00,26.86 Z" />
+  <g class="sites"><circle cx="110.00" cy="88.75" r="4" /><circle cx="161.80" cy="161.47" r="4" /><circle cx="58.21" cy="161.46" r="4" /><circle cx="110.02" cy="156.15" r="4" /></g>
+</svg></div></td><td><div class="cell"><span class="label">n = 4</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="4 points in polygon">
+  <g class="cells"><path d="M110.00,110.00 L110.00,110.00 L206.00,110.00 L206.00,14.00 L110.00,14.00 Z" /><path d="M14.00,110.00 L110.00,110.00 L110.00,14.00 L14.00,14.00 Z" /><path d="M110.00,206.00 L206.00,206.00 L206.00,110.00 L110.00,110.00 Z" /><path d="M14.00,206.00 L110.00,206.00 L110.00,110.00 L110.00,110.00 L14.00,110.00 Z" /></g>
+  <path class="boundary" d="M14.00,206.00 L206.00,206.00 L206.00,14.00 L14.00,14.00 Z" />
+  <g class="sites"><circle cx="158.00" cy="62.00" r="4" /><circle cx="62.00" cy="62.00" r="4" /><circle cx="158.00" cy="158.00" r="4" /><circle cx="62.00" cy="158.00" r="4" /></g>
+</svg></div></td><td><div class="cell"><span class="label">n = 4</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="4 points in polygon">
+  <g class="cells"><path d="M91.29,187.71 L110.00,201.30 L206.00,131.55 L200.11,113.42 L109.84,100.25 Z" /><path d="M29.59,83.57 L109.16,99.27 L121.61,18.70 L50.67,18.70 Z" /><path d="M14.00,131.55 L91.29,187.71 L109.84,100.25 L109.16,99.27 L29.59,83.57 Z" /><path d="M109.16,99.27 L109.84,100.25 L200.11,113.42 L169.33,18.70 L121.61,18.70 Z" /></g>
+  <path class="boundary" d="M110.00,201.30 L206.00,131.55 L169.33,18.70 L50.67,18.70 L14.00,131.55 Z" />
+  <g class="sites"><circle cx="139.98" cy="143.61" r="4" /><circle cx="78.80" cy="56.14" r="4" /><circle cx="64.70" cy="127.64" r="4" /><circle cx="151.11" cy="67.31" r="4" /></g>
+</svg></div></td></tr>
+<tr><td><div class="cell"><span class="label">n = 5</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5 points in polygon">
+  <g class="cells"><path d="M77.98,82.33 L129.34,123.54 L135.57,123.76 L158.29,110.51 L110.00,26.86 Z" /><path d="M135.57,123.76 L141.19,193.14 L206.00,193.14 L158.29,110.51 Z" /><path d="M14.00,193.14 L87.42,193.14 L83.58,153.37 L49.39,131.84 Z" /><path d="M83.58,153.37 L87.42,193.14 L141.19,193.14 L135.57,123.76 L129.34,123.54 Z" /><path d="M49.39,131.84 L83.58,153.37 L129.34,123.54 L77.98,82.33 Z" /></g>
+  <path class="boundary" d="M14.00,193.14 L206.00,193.14 L110.00,26.86 Z" />
+  <g class="sites"><circle cx="117.38" cy="82.01" r="4" /><circle cx="162.97" cy="160.15" r="4" /><circle cx="55.40" cy="169.78" r="4" /><circle cx="114.38" cy="164.08" r="4" /><circle cx="86.20" cy="120.86" r="4" /></g>
+</svg></div></td><td><div class="cell"><span class="label">n = 5</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5 points in polygon">
+  <g class="cells"><path d="M73.25,112.06 L83.40,206.00 L136.60,206.00 L146.75,112.06 L110.00,92.49 Z" /><path d="M14.00,102.54 L73.25,112.06 L110.00,92.49 L110.00,14.00 L14.00,14.00 Z" /><path d="M136.60,206.00 L206.00,206.00 L206.00,102.54 L146.75,112.06 Z" /><path d="M14.00,206.00 L83.40,206.00 L73.25,112.06 L14.00,102.54 Z" /><path d="M110.00,92.49 L146.75,112.06 L206.00,102.54 L206.00,14.00 L110.00,14.00 Z" /></g>
+  <path class="boundary" d="M14.00,206.00 L206.00,206.00 L206.00,14.00 L14.00,14.00 Z" />
+  <g class="sites"><circle cx="110.00" cy="151.03" r="4" /><circle cx="61.44" cy="59.81" r="4" /><circle cx="174.33" cy="157.97" r="4" /><circle cx="45.67" cy="157.97" r="4" /><circle cx="158.56" cy="59.81" r="4" /></g>
+</svg></div></td><td><div class="cell"><span class="label">n = 5</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5 points in polygon">
+  <g class="cells"><path d="M110.00,100.38 L157.99,166.44 L206.00,131.55 L187.67,75.14 L110.01,100.34 L110.00,100.36 Z" /><path d="M32.34,75.11 L110.00,100.36 L110.01,100.34 L110.01,18.70 L50.67,18.70 Z" /><path d="M14.00,131.55 L61.99,166.42 L110.00,100.38 L110.00,100.36 L32.34,75.11 Z" /><path d="M110.01,100.34 L187.67,75.14 L169.33,18.70 L110.01,18.70 Z" /><path d="M61.99,166.42 L110.00,201.30 L157.99,166.44 L110.00,100.38 Z" /></g>
+  <path class="boundary" d="M110.00,201.30 L206.00,131.55 L169.33,18.70 L50.67,18.70 L14.00,131.55 Z" />
+  <g class="sites"><circle cx="162.93" cy="117.57" r="4" /><circle cx="77.29" cy="55.32" r="4" /><circle cx="57.05" cy="117.55" r="4" /><circle cx="142.74" cy="55.32" r="4" /><circle cx="109.99" cy="156.04" r="4" /></g>
+</svg></div></td></tr>
+<tr><td><div class="cell"><span class="label">n = 6</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="6 points in polygon">
+  <g class="cells"><path d="M75.91,85.91 L110.11,104.79 L144.17,86.05 L110.00,26.86 Z" /><path d="M137.67,193.14 L206.00,193.14 L171.93,134.12 L138.47,154.31 Z" /><path d="M81.39,154.11 L82.14,193.14 L137.67,193.14 L138.47,154.31 L109.99,137.72 Z" /><path d="M109.99,137.72 L138.47,154.31 L171.93,134.12 L144.17,86.05 L110.11,104.79 Z" /><path d="M48.15,133.99 L81.39,154.11 L109.99,137.72 L110.11,104.79 L75.91,85.91 Z" /><path d="M14.00,193.14 L82.14,193.14 L81.39,154.11 L48.15,133.99 Z" /></g>
+  <path class="boundary" d="M14.00,193.14 L206.00,193.14 L110.00,26.86 Z" />
+  <g class="sites"><circle cx="110.05" cy="72.55" r="4" /><circle cx="166.43" cy="170.35" r="4" /><circle cx="109.87" cy="169.19" r="4" /><circle cx="137.31" cy="122.10" r="4" /><circle cx="82.79" cy="121.91" r="4" /><circle cx="53.51" cy="170.27" r="4" /></g>
+</svg></div></td><td><div class="cell"><span class="label">n = 6</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="6 points in polygon">
+  <g class="cells"><path d="M81.36,85.90 L81.56,134.24 L115.70,161.21 L172.98,109.96 L115.61,58.63 Z" /><path d="M14.00,63.33 L81.36,85.90 L115.61,58.63 L120.96,14.00 L14.00,14.00 Z" /><path d="M115.70,161.21 L121.17,206.00 L206.00,206.00 L206.00,109.94 L172.98,109.96 Z" /><path d="M14.00,157.22 L81.56,134.24 L81.36,85.90 L14.00,63.33 Z" /><path d="M115.61,58.63 L172.98,109.96 L206.00,109.94 L206.00,14.00 L120.96,14.00 Z" /><path d="M14.00,206.00 L121.17,206.00 L115.70,161.21 L81.56,134.24 L14.00,157.22 Z" /></g>
+  <path class="boundary" d="M14.00,206.00 L206.00,206.00 L206.00,14.00 L14.00,14.00 Z" />
+  <g class="sites"><circle cx="118.80" cy="109.93" r="4" /><circle cx="66.31" cy="44.04" r="4" /><circle cx="167.00" cy="163.81" r="4" /><circle cx="44.13" cy="110.24" r="4" /><circle cx="166.95" cy="56.11" r="4" /><circle cx="66.52" cy="176.09" r="4" /></g>
+</svg></div></td><td><div class="cell"><span class="label">n = 6</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="6 points in polygon">
+  <g class="cells"><path d="M73.90,88.64 L87.67,131.12 L132.36,131.14 L146.15,88.62 L110.00,62.41 Z" /><path d="M32.33,75.13 L73.90,88.64 L110.00,62.41 L110.00,18.70 L50.67,18.70 Z" /><path d="M14.00,131.55 L62.00,166.43 L87.67,131.12 L73.90,88.64 L32.33,75.13 Z" /><path d="M110.00,18.70 L110.00,62.41 L146.15,88.62 L187.66,75.12 L169.33,18.70 Z" /><path d="M62.00,166.43 L110.00,201.30 L158.00,166.43 L132.36,131.14 L87.67,131.12 Z" /><path d="M132.36,131.14 L158.00,166.43 L206.00,131.55 L187.66,75.12 L146.15,88.62 Z" /></g>
+  <path class="boundary" d="M110.00,201.30 L206.00,131.55 L169.33,18.70 L50.67,18.70 L14.00,131.55 Z" />
+  <g class="sites"><circle cx="110.03" cy="100.41" r="4" /><circle cx="73.87" cy="50.64" r="4" /><circle cx="51.54" cy="119.36" r="4" /><circle cx="146.13" cy="50.63" r="4" /><circle cx="110.00" cy="161.85" r="4" /><circle cx="168.48" cy="119.36" r="4" /></g>
+</svg></div></td></tr>
+<tr><td><div class="cell"><span class="label">n = 7</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="7 points in polygon">
+  <g class="cells"><path d="M110.04,103.14 L110.07,140.37 L151.89,146.62 L171.33,133.08 L143.28,84.51 Z" /><path d="M149.78,193.14 L206.00,193.14 L171.33,133.08 L151.89,146.62 Z" /><path d="M67.68,146.40 L69.60,193.14 L109.74,193.14 L109.50,140.92 Z" /><path d="M109.50,140.92 L109.74,193.14 L149.78,193.14 L151.89,146.62 L110.07,140.37 Z" /><path d="M48.70,133.03 L67.68,146.40 L109.50,140.92 L110.07,140.37 L110.04,103.14 L76.69,84.55 Z" /><path d="M14.00,193.14 L69.60,193.14 L67.68,146.40 L48.70,133.03 Z" /><path d="M76.69,84.55 L110.04,103.14 L143.28,84.51 L110.00,26.86 Z" /></g>
+  <path class="boundary" d="M14.00,193.14 L206.00,193.14 L110.00,26.86 Z" />
+  <g class="sites"><circle cx="137.00" cy="119.69" r="4" /><circle cx="171.98" cy="169.93" r="4" /><circle cx="89.47" cy="168.20" r="4" /><circle cx="129.78" cy="168.01" r="4" /><circle cx="83.11" cy="119.74" r="4" /><circle cx="47.76" cy="169.91" r="4" /><circle cx="110.00" cy="71.51" r="4" /></g>
+</svg></div></td><td><div class="cell"><span class="label">n = 7</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="7 points in polygon">
+  <g class="cells"><path d="M76.04,84.53 L76.27,135.80 L110.14,160.38 L144.04,135.49 L143.66,84.22 L109.86,59.75 Z" /><path d="M14.00,66.07 L76.04,84.53 L109.86,59.75 L109.73,14.00 L14.00,14.00 Z" /><path d="M110.14,160.38 L110.27,206.00 L206.00,206.00 L206.00,153.88 L144.04,135.49 Z" /><path d="M14.00,154.78 L76.27,135.80 L76.04,84.53 L14.00,66.07 Z" /><path d="M109.73,14.00 L109.86,59.75 L143.66,84.22 L206.00,65.17 L206.00,14.00 Z" /><path d="M14.00,206.00 L110.27,206.00 L110.14,160.38 L76.27,135.80 L14.00,154.78 Z" /><path d="M143.66,84.22 L144.04,135.49 L206.00,153.88 L206.00,65.17 Z" /></g>
+  <path class="boundary" d="M14.00,206.00 L206.00,206.00 L206.00,14.00 L14.00,14.00 Z" />
+  <g class="sites"><circle cx="110.00" cy="110.07" r="4" /><circle cx="61.93" cy="44.44" r="4" /><circle cx="158.10" cy="175.57" r="4" /><circle cx="42.31" cy="110.38" r="4" /><circle cx="157.71" cy="44.17" r="4" /><circle cx="62.26" cy="175.84" r="4" /><circle cx="177.70" cy="109.57" r="4" /></g>
+</svg></div></td><td><div class="cell"><span class="label">n = 7</span><svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="7 points in polygon">
+  <g class="cells"><path d="M113.43,132.46 L130.07,186.72 L187.33,145.12 L139.61,112.93 Z" /><path d="M33.16,72.59 L73.09,87.01 L108.49,61.24 L106.88,18.70 L50.67,18.70 Z" /><path d="M14.00,131.55 L52.08,159.22 L84.64,126.66 L73.09,87.01 L33.16,72.59 Z" /><path d="M106.88,18.70 L108.49,61.24 L142.50,84.10 L183.61,62.65 L169.33,18.70 Z" /><path d="M52.08,159.22 L110.00,201.30 L130.07,186.72 L113.43,132.46 L84.64,126.66 Z" /><path d="M139.61,112.93 L187.33,145.12 L206.00,131.55 L183.61,62.65 L142.50,84.10 Z" /><path d="M73.09,87.01 L84.64,126.66 L113.43,132.46 L139.61,112.93 L142.50,84.10 L108.49,61.24 Z" /></g>
+  <path class="boundary" d="M110.00,201.30 L206.00,131.55 L169.33,18.70 L50.67,18.70 L14.00,131.55 Z" />
+  <g class="sites"><circle cx="144.66" cy="146.91" r="4" /><circle cx="73.12" cy="49.83" r="4" /><circle cx="49.36" cy="115.63" r="4" /><circle cx="142.90" cy="47.19" r="4" /><circle cx="95.67" cy="161.94" r="4" /><circle cx="173.00" cy="104.88" r="4" /><circle cx="108.47" cy="98.41" r="4" /></g>
+</svg></div></td></tr>
+    </tbody>
+  </table>
+</body>
+</html>
