@@ -9,12 +9,9 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import * as R from 'ramda'
-import {
-  boundingBox,
-  distributePointsInPolygon,
-  type Point,
-  type Polygon,
-} from '../src/index.js'
+import pointille from '../src/index.js'
+import { boundingBox } from '../src/geometry.js'
+import type { Point, Polygon } from '../src/types.js'
 
 // ---------- shapes ----------
 const triangle: Polygon = [
@@ -103,7 +100,7 @@ const polygonToPath = (poly: Polygon, project: (p: Point) => [number, number]): 
 }
 
 const buildSvg = (polygon: Polygon, n: number): string => {
-  const points = distributePointsInPolygon(polygon, n)
+  const points = pointille([...polygon], n)
   const cells = clippedVoronoiCells(points, polygon)
   const project = fitTransform(polygon)
   const cellPaths = cells

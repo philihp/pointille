@@ -1,7 +1,7 @@
-export { distributePointsInPolygon } from './distribute-points-in-polygon.js'
-export type { DistributeOptions } from './distribute-points-in-polygon.js'
-export { lloydRelax, lloydStep } from './lloyd.js'
-export { voronoiCellCentroids } from './voronoi-centroid.js'
-export { boundingBox, pointInPolygon, polygonCentroid, signedArea } from './geometry.js'
-export { haltonPoint, haltonSequence } from './halton.js'
-export type { Point, Polygon } from './types.js'
+import { distributePointsInPolygon, type DistributeOptions } from './distribute-points-in-polygon.js'
+import type { Point } from './types.js'
+
+const pointille = (bound: Point[], n: number, options?: DistributeOptions): Point[] =>
+  distributePointsInPolygon(bound, n, options)
+
+export default pointille
