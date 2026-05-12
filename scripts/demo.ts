@@ -5,9 +5,10 @@
 // Run with: npm run test:demo
 import { Delaunay } from 'd3-delaunay'
 import polygonClipping from 'polygon-clipping'
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import * as R from 'ramda'
 import pointille from '../src/index.js'
 import { boundingBox } from '../src/geometry.js'
@@ -115,6 +116,13 @@ const buildSvg = (polygon: Polygon, n: number): string => {
     })
     .join('')
   return `<svg viewBox="0 0 ${VB} ${VB}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${n} points in polygon">
+  <style>
+    .bg { fill: #fff; }
+    .cells path { fill: rgba(80, 110, 200, 0.06); stroke: #b6bdcd; stroke-width: 0.6; }
+    .boundary { fill: none; stroke: #1a1a1a; stroke-width: 1.4; stroke-linejoin: round; }
+    .sites circle { fill: #c2410c; stroke: #fff; stroke-width: 1; }
+  </style>
+  <rect class="bg" width="100%" height="100%" />
   <g class="cells">${cellPaths}</g>
   <path class="boundary" d="${boundary}" />
   <g class="sites">${dots}</g>
@@ -211,5 +219,17 @@ const dir = mkdtempSync(join(tmpdir(), 'pointille-demo-'))
 const outPath = join(dir, 'index.html')
 writeFileSync(outPath, html, 'utf8')
 
+// Also emit standalone per-combo SVGs into docs/demo/ for use in README.
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const docsDir = join(repoRoot, 'docs', 'demo')
+mkdirSync(docsDir, { recursive: true })
+const slug = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+for (const { name, polygon } of shapes) {
+  for (const n of counts) {
+    writeFileSync(join(docsDir, `${slug(name)}-n${n}.svg`), buildSvg(polygon, n), 'utf8')
+  }
+}
+
 console.log(`Wrote demo to: ${outPath}`)
-console.log(`Open it with: open '${outPath}'  (macOS)  or  xdg-open '${outPath}'  (Linux)`)
+console.log(`Wrote per-combo SVGs to: ${docsDir}`)
+console.log(`Open the HTML with: open '${outPath}'  (macOS)  or  xdg-open '${outPath}'  (Linux)`)
