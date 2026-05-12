@@ -1,0 +1,12 @@
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="7 points in polygon">
+  <style>
+    .bg { fill: #fff; }
+    .cells path { fill: rgba(80, 110, 200, 0.06); stroke: #b6bdcd; stroke-width: 0.6; }
+    .boundary { fill: none; stroke: #1a1a1a; stroke-width: 1.4; stroke-linejoin: round; }
+    .sites circle { fill: #c2410c; stroke: #fff; stroke-width: 1; }
+  </style>
+  <rect class="bg" width="100%" height="100%" />
+  <g class="cells"><path d="M113.43,132.46 L130.07,186.72 L187.33,145.12 L139.61,112.93 Z" /><path d="M33.16,72.59 L73.09,87.01 L108.49,61.24 L106.88,18.70 L50.67,18.70 Z" /><path d="M14.00,131.55 L52.08,159.22 L84.64,126.66 L73.09,87.01 L33.16,72.59 Z" /><path d="M106.88,18.70 L108.49,61.24 L142.50,84.10 L183.61,62.65 L169.33,18.70 Z" /><path d="M52.08,159.22 L110.00,201.30 L130.07,186.72 L113.43,132.46 L84.64,126.66 Z" /><path d="M139.61,112.93 L187.33,145.12 L206.00,131.55 L183.61,62.65 L142.50,84.10 Z" /><path d="M73.09,87.01 L84.64,126.66 L113.43,132.46 L139.61,112.93 L142.50,84.10 L108.49,61.24 Z" /></g>
+  <path class="boundary" d="M110.00,201.30 L206.00,131.55 L169.33,18.70 L50.67,18.70 L14.00,131.55 Z" />
+  <g class="sites"><circle cx="144.66" cy="146.91" r="4" /><circle cx="73.12" cy="49.83" r="4" /><circle cx="49.36" cy="115.63" r="4" /><circle cx="142.90" cy="47.19" r="4" /><circle cx="95.67" cy="161.94" r="4" /><circle cx="173.00" cy="104.88" r="4" /><circle cx="108.47" cy="98.41" r="4" /></g>
+</svg>
