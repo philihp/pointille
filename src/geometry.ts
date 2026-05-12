@@ -1,4 +1,4 @@
-import * as R from 'ramda'
+import { map, reduce, sum } from 'ramda'
 import type { Point, Polygon } from './types.js'
 
 const xOf = (p: Point): number => p[0]
@@ -14,7 +14,7 @@ const expandBBox = ([[lx, ly], [hx, hy]]: BBox, [x, y]: Point): BBox => [
   [Math.min(lx, x), Math.min(ly, y)],
   [Math.max(hx, x), Math.max(hy, y)],
 ]
-export const boundingBox = (polygon: Polygon): BBox => R.reduce(expandBBox, initBBox, polygon)
+export const boundingBox = (polygon: Polygon): BBox => reduce(expandBBox, initBBox, polygon)
 
 // Ray-cast point-in-polygon. Manually curried so call sites that pre-bind the
 // polygon (`const inside = pointInPolygon(poly)`) are cheap and well-typed.
@@ -65,8 +65,8 @@ export const polygonCentroid = (polygon: Polygon): Point => {
     cy += (y0 + y1) * cross
   }
   if (Math.abs(a2) < 1e-12) {
-    const sx = R.sum(R.map(xOf, polygon)) / n
-    const sy = R.sum(R.map(yOf, polygon)) / n
+    const sx = sum(map(xOf, polygon)) / n
+    const sy = sum(map(yOf, polygon)) / n
     return [sx, sy]
   }
   const factor = 1 / (3 * a2)

@@ -1,6 +1,6 @@
 import { Delaunay } from 'd3-delaunay'
 import polygonClipping from 'polygon-clipping'
-import * as R from 'ramda'
+import { compose, filter, map, transduce } from 'ramda'
 import type { Point, Polygon } from './types.js'
 import { boundingBox, polygonCentroid, signedArea } from './geometry.js'
 
@@ -42,14 +42,14 @@ const addContribution = (acc: Contribution, c: Contribution): Contribution => ({
 })
 
 // Transducer: filter degenerate rings + map to contributions, fused into one pass.
-const ringsToContribution = R.compose(
-  R.filter((r: Polygon) => r.length >= 3),
-  R.map(toContribution),
+const ringsToContribution = compose(
+  filter((r: Polygon) => r.length >= 3),
+  map(toContribution),
 )
 
 // Area-weighted centroid across multiple disjoint pieces.
 const weightedCentroid = (rings: ReadonlyArray<Polygon>, fallback: Point): Point => {
-  const { area, sx, sy } = R.transduce(
+  const { area, sx, sy } = transduce(
     ringsToContribution,
     addContribution,
     zeroContribution,
