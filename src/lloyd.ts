@@ -1,4 +1,4 @@
-import * as R from 'ramda'
+import { range } from 'ramda'
 import type { Point, Polygon } from './types.js'
 import { voronoiCellCentroids } from './voronoi-centroid.js'
 
@@ -7,7 +7,7 @@ import { voronoiCellCentroids } from './voronoi-centroid.js'
 export const iterate =
   <T>(n: number, f: (x: T) => T) =>
   (x: T): T =>
-    R.range(0, n).reduce<T>((acc) => f(acc), x)
+    range(0, n).reduce<T>((acc) => f(acc), x)
 
 // One Lloyd relaxation step: each site moves to the centroid of its
 // Voronoi cell clipped to the polygon.

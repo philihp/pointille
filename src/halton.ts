@@ -1,4 +1,4 @@
-import * as R from 'ramda'
+import { times } from 'ramda'
 import type { Point } from './types.js'
 
 // Single-coordinate Halton value for `index` in `base`.
@@ -24,4 +24,4 @@ export const haltonPoint = (index: number): Point => [halton2(index), halton3(in
 
 // First `n` Halton points starting at `start` (default 1, since index 0 is the origin).
 export const haltonSequence = (n: number, start = 1): Point[] =>
-  R.times((i) => haltonPoint(i + start), n)
+  times((i) => haltonPoint(i + start), n)

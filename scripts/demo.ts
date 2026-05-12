@@ -9,7 +9,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import * as R from 'ramda'
+import { times } from 'ramda'
 import pointille from '../src/index.js'
 import { boundingBox } from '../src/geometry.js'
 import type { Point, Polygon } from '../src/types.js'
@@ -28,7 +28,7 @@ const square: Polygon = [
   [0, 10],
 ]
 
-const pentagon: Polygon = R.times((i) => {
+const pentagon: Polygon = times((i) => {
   const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5
   return [5 + 5 * Math.cos(angle), 5 + 5 * Math.sin(angle)] as Point
 }, 5)
