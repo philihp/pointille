@@ -25,18 +25,38 @@ const ringWithoutClose = (ring: ReadonlyArray<readonly [number, number]>): Point
   return trimmed.map(([x, y]) => [x, y] as Point)
 }
 
+// One ring's contribution to an area-weighted centroid.
+type Contribution = { area: number; sx: number; sy: number }
+const zeroContribution: Contribution = { area: 0, sx: 0, sy: 0 }
+
+const toContribution = (ring: Polygon): Contribution => {
+  const area = Math.abs(signedArea(ring))
+  const [cx, cy] = polygonCentroid(ring)
+  return { area, sx: area * cx, sy: area * cy }
+}
+
+const addContribution = (acc: Contribution, c: Contribution): Contribution => ({
+  area: acc.area + c.area,
+  sx: acc.sx + c.sx,
+  sy: acc.sy + c.sy,
+})
+
+// Transducer: filter degenerate rings + map to contributions, fused into one pass.
+const ringsToContribution = R.compose(
+  R.filter((r: Polygon) => r.length >= 3),
+  R.map(toContribution),
+)
+
 // Area-weighted centroid across multiple disjoint pieces.
 const weightedCentroid = (rings: ReadonlyArray<Polygon>, fallback: Point): Point => {
-  const pairs = R.map((ring: Polygon) => {
-    const a = Math.abs(signedArea(ring))
-    const c = polygonCentroid(ring)
-    return [a, c] as const
-  }, rings)
-  const totalArea = R.sum(R.map(([a]) => a, pairs))
-  if (totalArea < 1e-12) return fallback
-  const sx = R.sum(R.map(([a, c]) => a * c[0], pairs)) / totalArea
-  const sy = R.sum(R.map(([a, c]) => a * c[1], pairs)) / totalArea
-  return [sx, sy]
+  const { area, sx, sy } = R.transduce(
+    ringsToContribution,
+    addContribution,
+    zeroContribution,
+    rings as Polygon[],
+  )
+  if (area < 1e-12) return fallback
+  return [sx / area, sy / area]
 }
 
 // For each Voronoi site, compute the centroid of (its cell ∩ clipPolygon).
@@ -64,6 +84,6 @@ export const voronoiCellCentroids = (
     if (inter.length === 0) return site
     // inter is MultiPolygon: take outer ring of each piece (ignore holes for centroid use).
     const outerRings = inter.map((poly) => ringWithoutClose(poly[0] ?? []))
-    return weightedCentroid(outerRings.filter((r) => r.length >= 3), site)
+    return weightedCentroid(outerRings, site)
   })
 }

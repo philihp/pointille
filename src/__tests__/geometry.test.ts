@@ -71,20 +71,20 @@ describe('polygonCentroid', () => {
 
 describe('pointInPolygon', () => {
   it('detects interior points of unit square', () => {
-    assert.equal(pointInPolygon(unitSquare, [0.5, 0.5]), true)
-    assert.equal(pointInPolygon(unitSquare, [0.01, 0.99]), true)
+    assert.equal(pointInPolygon(unitSquare)([0.5, 0.5]), true)
+    assert.equal(pointInPolygon(unitSquare)([0.01, 0.99]), true)
   })
   it('rejects exterior points of unit square', () => {
-    assert.equal(pointInPolygon(unitSquare, [-0.1, 0.5]), false)
-    assert.equal(pointInPolygon(unitSquare, [1.5, 0.5]), false)
-    assert.equal(pointInPolygon(unitSquare, [0.5, 2]), false)
+    assert.equal(pointInPolygon(unitSquare)([-0.1, 0.5]), false)
+    assert.equal(pointInPolygon(unitSquare)([1.5, 0.5]), false)
+    assert.equal(pointInPolygon(unitSquare)([0.5, 2]), false)
   })
   it('respects concavity of L-shape', () => {
     // Inside the leg.
-    assert.equal(pointInPolygon(lShape, [0.5, 1.5]), true)
-    assert.equal(pointInPolygon(lShape, [1.5, 0.5]), true)
+    assert.equal(pointInPolygon(lShape)([0.5, 1.5]), true)
+    assert.equal(pointInPolygon(lShape)([1.5, 0.5]), true)
     // In the notch (outside the L).
-    assert.equal(pointInPolygon(lShape, [1.5, 1.5]), false)
+    assert.equal(pointInPolygon(lShape)([1.5, 1.5]), false)
   })
   it('is curried', () => {
     const isInside = pointInPolygon(unitSquare)
