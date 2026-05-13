@@ -135,9 +135,9 @@ describe('pointille — determinism', () => {
     const b = pointille(lShape, 15)
     assert.deepEqual(a, b)
   })
-  it('different haltonOffset gives a different layout', () => {
-    const a = pointille(unitSquare, 10, { haltonOffset: 1 })
-    const b = pointille(unitSquare, 10, { haltonOffset: 100 })
+  it('different seed gives a different layout', () => {
+    const a = pointille(unitSquare, 10, { seed: 1 })
+    const b = pointille(unitSquare, 10, { seed: 100 })
     assert.notDeepEqual(a, b)
   })
 })
