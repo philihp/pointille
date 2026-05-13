@@ -11,13 +11,13 @@ npm install pointille
 ## Usage
 
 ```ts
-import { distributePointsInPolygon } from 'pointille'
+import { pointille } from 'pointille'
 
 const unitSquare = [
   [0, 0], [1, 0], [1, 1], [0, 1],
 ] as const
 
-const points = distributePointsInPolygon(unitSquare, 25)
+const points = pointille(unitSquare, 25)
 // => 25 [x, y] tuples, all inside the square, roughly evenly spaced.
 ```
 
@@ -26,7 +26,7 @@ A `Point` is a `readonly [number, number]` tuple. A `Polygon` is an ordered ring
 ### Options
 
 ```ts
-distributePointsInPolygon(polygon, n, {
+pointille(polygon, n, {
   iterations: 30,    // Lloyd relaxation steps. Default: 30.
   haltonOffset: 1,   // Starting index into the Halton seed sequence. Default: 1.
 })

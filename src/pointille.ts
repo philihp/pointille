@@ -3,7 +3,7 @@ import { haltonPoint } from './halton.js'
 import { boundingBox, pointInPolygon } from './geometry.js'
 import { lloydRelax } from './lloyd.js'
 
-export interface DistributeOptions {
+export interface PointilleOptions {
   /** Number of Lloyd relaxation iterations. Default: 30. */
   iterations?: number
   /** Starting offset into the Halton sequence (deterministic). Default: 1. */
@@ -44,10 +44,10 @@ const seedPoints = (polygon: Polygon, n: number, offset: number): Point[] => {
  *
  * @returns an array of exactly `n` points (or `[]` if `n <= 0`).
  */
-export const distributePointsInPolygon = (
+export const pointille = (
   polygon: Polygon,
   n: number,
-  { iterations = DEFAULT_ITERATIONS, haltonOffset = 1 }: DistributeOptions = {},
+  { iterations = DEFAULT_ITERATIONS, haltonOffset = 1 }: PointilleOptions = {},
 ): Point[] => {
   if (n <= 0 || polygon.length < 3) return []
   const seed = seedPoints(polygon, n, haltonOffset)

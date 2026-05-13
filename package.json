@@ -1,6 +1,6 @@
 {
   "name": "pointille",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Distribute N points approximately evenly inside a polygon, deterministically, via Lloyd's algorithm on a centroidal Voronoi tessellation.",
   "type": "module",
   "sideEffects": false,
@@ -37,7 +37,7 @@
     "halton",
     "deterministic"
   ],
-  "author": "philihp",
+  "author": "Philihp Busby <philihp@gmail.com>",
   "license": "MIT",
   "publishConfig": {
     "access": "public"

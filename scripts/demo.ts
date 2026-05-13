@@ -11,7 +11,7 @@ import { join } from 'node:path'
 import * as R from 'ramda'
 import {
   boundingBox,
-  distributePointsInPolygon,
+  pointille,
   type Point,
   type Polygon,
 } from '../src/index.js'
@@ -103,7 +103,7 @@ const polygonToPath = (poly: Polygon, project: (p: Point) => [number, number]): 
 }
 
 const buildSvg = (polygon: Polygon, n: number): string => {
-  const points = distributePointsInPolygon(polygon, n)
+  const points = pointille(polygon, n)
   const cells = clippedVoronoiCells(points, polygon)
   const project = fitTransform(polygon)
   const cellPaths = cells
