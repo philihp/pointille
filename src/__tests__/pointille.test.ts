@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { pointille } from '../pointille.js'
+import { pointille } from '../index.js'
 import { pointInPolygon } from '../geometry.js'
 import type { Point, Polygon } from '../types.js'
 

@@ -41,8 +41,7 @@ const addMoments = ([a0, x0, y0]: Moment, [a1, x1, y1]: Moment): Moment => [
 const ZERO_MOMENT: Moment = [0, 0, 0]
 
 // Area-weighted centroid across disjoint pieces (e.g. when a Voronoi cell's
-// intersection with the clip polygon yields multiple components). Fused into
-// a single pass with a transducer: rings → moments → summed.
+// intersection with the clip polygon yields multiple components).
 const weightedCentroid = (
   rings: ReadonlyArray<Polygon>,
   fallback: Point,
