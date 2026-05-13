@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import type { Point, Polygon } from './types.js'
 import { voronoiCellCentroids } from './voronoi-centroid.js'
 
@@ -9,12 +8,12 @@ export const lloydStep =
   (sites: ReadonlyArray<Point>): Point[] =>
     voronoiCellCentroids(sites, polygon)
 
-// A curried iterator: `lloydRelax(polygon, n)(seed)` runs n Lloyd steps.
+// Curried iterator: `lloydRelax(polygon, n)(seed)` runs `n` Lloyd steps.
 export const lloydRelax =
   (polygon: Polygon, iterations: number) =>
-  (seed: ReadonlyArray<Point>): Point[] =>
-    R.reduce(
-      (acc: Point[]) => lloydStep(polygon)(acc),
-      [...seed] as Point[],
-      R.range(0, iterations),
-    )
+  (seed: ReadonlyArray<Point>): Point[] => {
+    const step = lloydStep(polygon)
+    let points: Point[] = [...seed]
+    for (let i = 0; i < iterations; i++) points = step(points)
+    return points
+  }

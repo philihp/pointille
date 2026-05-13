@@ -1,27 +1,28 @@
-import * as R from 'ramda'
 import type { Point } from './types.js'
 
-// Single-coordinate Halton value for `index` in `base`.
-// Deterministic, point-free-adjacent: an inner reducer over the
-// base-b digit expansion of `index`.
-const haltonAt = (base: number) => (index: number): number => {
-  let f = 1
-  let r = 0
-  let i = index
-  while (i > 0) {
-    f = f / base
-    r = r + f * (i % base)
-    i = Math.floor(i / base)
+// Van der Corput sequence: reflect `index` around the radix point in `base`.
+// E.g. for base 2, index 5 (binary 101) → 0.101 = 0.625.
+const vanDerCorput =
+  (base: number) =>
+  (index: number): number => {
+    let f = 1 / base
+    let result = 0
+    for (let i = index; i > 0; i = Math.floor(i / base)) {
+      result += f * (i % base)
+      f /= base
+    }
+    return result
   }
-  return r
-}
 
-const halton2 = haltonAt(2)
-const halton3 = haltonAt(3)
+const halton2 = vanDerCorput(2)
+const halton3 = vanDerCorput(3)
 
 // One 2D Halton sample (bases 2, 3) at the given 1-based index.
-export const haltonPoint = (index: number): Point => [halton2(index), halton3(index)]
+export const haltonPoint = (index: number): Point => [
+  halton2(index),
+  halton3(index),
+]
 
-// First `n` Halton points starting at `start` (default 1, since index 0 is the origin).
+// First `n` Halton points starting at `start` (default 1; index 0 is the origin).
 export const haltonSequence = (n: number, start = 1): Point[] =>
-  R.times((i) => haltonPoint(i + start), n)
+  Array.from({ length: n }, (_, i) => haltonPoint(i + start))

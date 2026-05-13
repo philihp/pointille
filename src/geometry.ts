@@ -1,54 +1,69 @@
-import * as R from 'ramda'
 import type { Point, Polygon } from './types.js'
 
-const xOf = (p: Point): number => p[0]
-const yOf = (p: Point): number => p[1]
-
+// Axis-aligned bounding box as [min, max] corners.
 export const boundingBox = (polygon: Polygon): readonly [Point, Point] => {
-  const xs = R.map(xOf, polygon)
-  const ys = R.map(yOf, polygon)
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  for (const [x, y] of polygon) {
+    if (x < minX) minX = x
+    if (y < minY) minY = y
+    if (x > maxX) maxX = x
+    if (y > maxY) maxY = y
+  }
   return [
-    [Math.min(...xs), Math.min(...ys)],
-    [Math.max(...xs), Math.max(...ys)],
+    [minX, minY],
+    [maxX, maxY],
   ]
 }
 
-// Ray-cast point-in-polygon. Standard crossing-number test.
-// Loop is imperative for clarity and speed; the call site stays composable.
-export const pointInPolygon = R.curry((polygon: Polygon, p: Point): boolean => {
+// Ray-cast point-in-polygon (crossing-number test). Manually curried so call
+// sites can pre-bind the polygon and pipe candidate points through.
+const pointInPolygonImpl = (polygon: Polygon, p: Point): boolean => {
   const [x, y] = p
   const n = polygon.length
   let inside = false
   for (let i = 0, j = n - 1; i < n; j = i++) {
     const [xi, yi] = polygon[i]!
     const [xj, yj] = polygon[j]!
-    const crosses = yi > y !== yj > y
-    if (!crosses) continue
+    if (yi > y === yj > y) continue
     const xIntersect = ((xj - xi) * (y - yi)) / (yj - yi) + xi
     if (x < xIntersect) inside = !inside
   }
   return inside
-})
+}
 
-// Signed polygon area (shoelace). Positive for counter-clockwise rings.
+export function pointInPolygon(polygon: Polygon): (p: Point) => boolean
+export function pointInPolygon(polygon: Polygon, p: Point): boolean
+export function pointInPolygon(
+  polygon: Polygon,
+  p?: Point,
+): boolean | ((p: Point) => boolean) {
+  if (p === undefined) return (q: Point) => pointInPolygonImpl(polygon, q)
+  return pointInPolygonImpl(polygon, p)
+}
+
+// Shoelace formula. Positive for counter-clockwise rings, negative for clockwise.
 export const signedArea = (polygon: Polygon): number => {
   const n = polygon.length
   if (n < 3) return 0
-  let a = 0
+  let sum = 0
   for (let i = 0; i < n; i++) {
     const [x0, y0] = polygon[i]!
     const [x1, y1] = polygon[(i + 1) % n]!
-    a += x0 * y1 - x1 * y0
+    sum += x0 * y1 - x1 * y0
   }
-  return a * 0.5
+  return sum / 2
 }
 
-// Polygon centroid (area-weighted). Falls back to the vertex mean for
-// degenerate (zero-area) inputs so we never return NaN.
+// Area-weighted centroid. Falls back to the vertex mean for degenerate
+// (zero-area) rings so we never return NaN.
 export const polygonCentroid = (polygon: Polygon): Point => {
   const n = polygon.length
   if (n === 0) return [0, 0]
   if (n === 1) return polygon[0]!
+
   let a2 = 0
   let cx = 0
   let cy = 0
@@ -60,11 +75,17 @@ export const polygonCentroid = (polygon: Polygon): Point => {
     cx += (x0 + x1) * cross
     cy += (y0 + y1) * cross
   }
+
   if (Math.abs(a2) < 1e-12) {
-    const sx = R.sum(R.map(xOf, polygon)) / n
-    const sy = R.sum(R.map(yOf, polygon)) / n
-    return [sx, sy]
+    let sx = 0
+    let sy = 0
+    for (const [x, y] of polygon) {
+      sx += x
+      sy += y
+    }
+    return [sx / n, sy / n]
   }
-  const factor = 1 / (3 * a2)
-  return [cx * factor, cy * factor]
+
+  const k = 1 / (3 * a2)
+  return [cx * k, cy * k]
 }

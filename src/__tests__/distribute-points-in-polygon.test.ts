@@ -34,7 +34,8 @@ const circleApprox = (n = 32): Polygon =>
     return [Math.cos(t), Math.sin(t)] as Point
   })
 
-const distance = (a: Point, b: Point): number => Math.hypot(a[0] - b[0], a[1] - b[1])
+const distance = (a: Point, b: Point): number =>
+  Math.hypot(a[0] - b[0], a[1] - b[1])
 
 const minNearestNeighbour = (points: ReadonlyArray<Point>): number => {
   let best = Infinity
@@ -70,7 +71,16 @@ describe('distributePointsInPolygon — counts and edges', () => {
     assert.deepEqual(distributePointsInPolygon(unitSquare, -3), [])
   })
   it('returns [] for a degenerate polygon (< 3 vertices)', () => {
-    assert.deepEqual(distributePointsInPolygon([[0, 0], [1, 1]], 5), [])
+    assert.deepEqual(
+      distributePointsInPolygon(
+        [
+          [0, 0],
+          [1, 1],
+        ],
+        5,
+      ),
+      [],
+    )
   })
   it('returns exactly n points for n = 1', () => {
     const out = distributePointsInPolygon(unitSquare, 1)
@@ -90,23 +100,27 @@ describe('distributePointsInPolygon — counts and edges', () => {
 describe('distributePointsInPolygon — containment', () => {
   it('all points lie inside the unit square (n=25)', () => {
     const pts = distributePointsInPolygon(unitSquare, 25)
-    for (const p of pts) assert.ok(pointInPolygon(unitSquare, p), `outside: ${p.join(',')}`)
+    for (const p of pts)
+      assert.ok(pointInPolygon(unitSquare, p), `outside: ${p.join(',')}`)
   })
 
   it('all points lie inside the triangle (n=30)', () => {
     const pts = distributePointsInPolygon(triangle, 30)
-    for (const p of pts) assert.ok(pointInPolygon(triangle, p), `outside: ${p.join(',')}`)
+    for (const p of pts)
+      assert.ok(pointInPolygon(triangle, p), `outside: ${p.join(',')}`)
   })
 
   it('all points lie inside the concave L-shape (n=20)', () => {
     const pts = distributePointsInPolygon(lShape, 20)
-    for (const p of pts) assert.ok(pointInPolygon(lShape, p), `outside: ${p.join(',')}`)
+    for (const p of pts)
+      assert.ok(pointInPolygon(lShape, p), `outside: ${p.join(',')}`)
   })
 
   it('all points lie inside a circle-approximation (n=40)', () => {
     const circle = circleApprox(64)
     const pts = distributePointsInPolygon(circle, 40)
-    for (const p of pts) assert.ok(pointInPolygon(circle, p), `outside: ${p.join(',')}`)
+    for (const p of pts)
+      assert.ok(pointInPolygon(circle, p), `outside: ${p.join(',')}`)
   })
 })
 
@@ -137,7 +151,10 @@ describe('distributePointsInPolygon — distribution quality', () => {
     // no two points have collapsed onto one another.
     const ideal = 1 / Math.sqrt(n)
     const minNN = minNearestNeighbour(pts)
-    assert.ok(minNN > 0.6 * ideal, `minNN=${minNN.toFixed(4)} ideal=${ideal.toFixed(4)}`)
+    assert.ok(
+      minNN > 0.6 * ideal,
+      `minNN=${minNN.toFixed(4)} ideal=${ideal.toFixed(4)}`,
+    )
   })
 
   it('square: min NN distance is close to mean NN distance (uniformity)', () => {
@@ -145,7 +162,10 @@ describe('distributePointsInPolygon — distribution quality', () => {
     const minNN = minNearestNeighbour(pts)
     const meanNN = meanNearestNeighbour(pts)
     // Min should be at least 60% of mean — i.e. not heavily clustered.
-    assert.ok(minNN / meanNN > 0.6, `minNN/meanNN=${(minNN / meanNN).toFixed(3)}`)
+    assert.ok(
+      minNN / meanNN > 0.6,
+      `minNN/meanNN=${(minNN / meanNN).toFixed(3)}`,
+    )
   })
 
   it('circle: minimum spacing is reasonable', () => {
@@ -156,6 +176,9 @@ describe('distributePointsInPolygon — distribution quality', () => {
     // sqrt(π/n). Require min NN >= 0.45 * ideal.
     const ideal = Math.sqrt(Math.PI / n)
     const minNN = minNearestNeighbour(pts)
-    assert.ok(minNN > 0.45 * ideal, `minNN=${minNN.toFixed(4)} ideal=${ideal.toFixed(4)}`)
+    assert.ok(
+      minNN > 0.45 * ideal,
+      `minNN=${minNN.toFixed(4)} ideal=${ideal.toFixed(4)}`,
+    )
   })
 })

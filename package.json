@@ -44,13 +44,11 @@
   },
   "dependencies": {
     "d3-delaunay": "^6.0.4",
-    "polygon-clipping": "^0.15.7",
-    "ramda": "^0.30.1"
+    "polygon-clipping": "^0.15.7"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.7",
     "@types/d3-delaunay": "^6.0.4",
-    "@types/ramda": "^0.30.2",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
