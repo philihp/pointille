@@ -1,6 +1,6 @@
 # pointille
 
-Distribute `n` points approximately evenly inside a polygon — deterministically — via Lloyd's algorithm on a centroidal Voronoi tessellation (CVT). Named after the Pointillist painters, who were solving much the same problem by hand.
+Distribute `n` points approximately evenly inside a polygon — deterministically — via Lloyd's algorithm on a centroidal Voronoi tessellation (CVT). Named after [pointillé](https://en.wikipedia.org/wiki/Pointillé), the decorative pattern used in jewelry.
 
 |     | Triangle | Square | Pentagon |
 | --- | :---: | :---: | :---: |
@@ -32,6 +32,18 @@ const points = pointille(unitSquare, 25)
 
 A `Point` is a `readonly [number, number]` tuple. A `Polygon` is an ordered ring of points (no need to close it — the first vertex is implicitly connected to the last).
 
+### Concave polygons
+
+Cells are clipped against the input polygon, so concave shapes work too. No points leak into the missing corner, and density along each arm stays roughly equal:
+
+```ts
+const lShape = [
+  [0, 0], [2, 0], [2, 1], [1, 1], [1, 2], [0, 2],
+] as const
+
+const points = pointille(lShape, 40)
+```
+
 ### Options
 
 ```ts
@@ -53,6 +65,10 @@ Changing `seed` is the canonical way to get a different — but still determinis
 3. Stop after `iterations` steps (default 30). The result is a centroidal Voronoi tessellation: each cell's site is at its own centroid, which gives the visual "even distribution" property.
 
 The function is **pure and deterministic**: same inputs → byte-identical outputs.
+
+## Why not Poisson-disk sampling?
+
+[Poisson-disk sampling](https://www.jasondavies.com/poisson-disc/) is the usual go-to for "evenly spread but not gridded" points and is faster, with a more organic feel. A CVT layout looks more intentionally spaced, with a more crystalline quality — pick whichever matches the look you want.
 
 ## Development
 
