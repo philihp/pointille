@@ -288,6 +288,33 @@ for (const { name, polygon } of radiusShapes) {
   }
 }
 
+// The 5:4:1 "triangle" — degenerate by the triangle inequality (4 + 1 = 5),
+// so its vertices are collinear and it encloses zero area. pointille returns
+// [] for it (and throws PointilleFitError when a radius is requested), so
+// its panel shows the collapsed outline with an annotation.
+{
+  const sliver: Polygon = [
+    [0, 0],
+    [5, 0],
+    [4, 0],
+  ]
+  const points = pointille(sliver, 5)
+  const { project } = fitTransform(sliver)
+  const outline = polygonToPath(sliver, project)
+  const svg = `<svg viewBox="0 0 ${VB} ${VB}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5:4:1 triangle is degenerate; ${points.length} of 5 points placed">
+  <style>
+    .bg { fill: #fff; }
+    .boundary { fill: none; stroke: #1a1a1a; stroke-width: 1.4; stroke-linejoin: round; }
+    .note { font: 11px -apple-system, system-ui, sans-serif; fill: #777; text-anchor: middle; }
+  </style>
+  <rect class="bg" width="100%" height="100%" />
+  <path class="boundary" d="${outline}" />
+  <text class="note" x="${VB / 2}" y="${VB / 2 + 24}">sides 5 : 4 : 1 — flat (4 + 1 = 5)</text>
+  <text class="note" x="${VB / 2}" y="${VB / 2 + 40}">zero area → ${points.length} of 5 points placed</text>
+</svg>`
+  writeFileSync(join(docsDir, 'sliver-5-4-1-n5.svg'), svg, 'utf8')
+}
+
 console.log(`Wrote demo to: ${outPath}`)
 console.log(`Wrote per-combo SVGs to: ${docsDir}`)
 console.log(`Open the HTML with: open '${outPath}'  (macOS)  or  xdg-open '${outPath}'  (Linux)`)
