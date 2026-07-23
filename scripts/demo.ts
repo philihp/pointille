@@ -288,15 +288,15 @@ for (const { name, polygon } of radiusShapes) {
   }
 }
 
-// Tall isosceles triangle with sides 5:5:1 — a narrow wedge that stresses
+// Tall isosceles triangle with sides 5:5:2 — a narrow wedge that stresses
 // boundary handling near the sharp apex.
 {
   const isosceles: Polygon = [
     [0, 0],
-    [1, 0],
-    [0.5, Math.sqrt(25 - 0.25)],
+    [2, 0],
+    [1, Math.sqrt(24)],
   ]
-  writeFileSync(join(docsDir, 'isosceles-5-5-1-n5-r0_2.svg'), buildSvg(isosceles, 5, 0.2), 'utf8')
+  writeFileSync(join(docsDir, 'isosceles-5-5-2-n5-r0_1.svg'), buildSvg(isosceles, 5, 0.1), 'utf8')
 }
 
 console.log(`Wrote demo to: ${outPath}`)
