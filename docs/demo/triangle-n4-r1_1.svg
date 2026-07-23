@@ -1,0 +1,13 @@
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="4 circles of radius 1.1 in polygon">
+  <style>
+    .bg { fill: #fff; }
+    .cells path { fill: rgba(80, 110, 200, 0.06); stroke: #b6bdcd; stroke-width: 0.6; }
+    .boundary { fill: none; stroke: #1a1a1a; stroke-width: 1.4; stroke-linejoin: round; }
+    .sites circle { fill: #c2410c; stroke: #fff; stroke-width: 1; }
+    .sites circle.disc { fill: rgba(194, 65, 12, 0.25); stroke: #c2410c; stroke-width: 1.2; }
+  </style>
+  <rect class="bg" width="100%" height="100%" />
+  <g class="cells"><path d="M73.19,90.62 L138.03,119.68 L158.26,110.45 L110.00,26.86 Z" /><path d="M14.00,193.14 L110.52,193.14 L108.40,171.00 L50.81,129.38 Z" /><path d="M50.81,129.38 L108.40,171.00 L138.03,119.68 L73.19,90.62 Z" /><path d="M108.40,171.00 L110.52,193.14 L206.00,193.14 L158.26,110.45 L138.03,119.68 Z" /></g>
+  <path class="boundary" d="M14.00,193.14 L206.00,193.14 L110.00,26.86 Z" />
+  <g class="sites"><circle class="disc" cx="115.33" cy="80.98" r="21.12" /><circle cx="115.33" cy="80.98" r="2" /><circle class="disc" cx="63.53" cy="170.69" r="21.12" /><circle cx="63.53" cy="170.69" r="2" /><circle class="disc" cx="94.03" cy="128.49" r="21.12" /><circle cx="94.03" cy="128.49" r="2" /><circle class="disc" cx="152.40" cy="162.19" r="21.12" /><circle cx="152.40" cy="162.19" r="2" /></g>
+</svg>

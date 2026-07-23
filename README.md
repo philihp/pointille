@@ -44,12 +44,40 @@ const lShape = [
 const points = pointille(lShape, 40)
 ```
 
+### Circles with a radius
+
+Pass `radius` to treat each point as the center of a circle. The result then carries two hard guarantees: every circle lies fully inside the polygon (centers at least `radius` from the boundary), and no two circles overlap (centers at least `2 * radius` apart) — still fully deterministic.
+
+```ts
+const centers = pointille(unitSquare, 9, { radius: 0.1 })
+// => 9 centers; each circle of radius 0.1 fits inside the square,
+//    and no two circles overlap.
+```
+
+|     | Triangle | Square | Pentagon | L-shape |
+| --- | :---: | :---: | :---: | :---: |
+| **n = 4, r = 1.1** | <img src="https://raw.githubusercontent.com/philihp/pointille/main/docs/demo/triangle-n4-r1_1.svg" width="160" alt="4 circles in a triangle" /> | <img src="https://raw.githubusercontent.com/philihp/pointille/main/docs/demo/square-n4-r1_1.svg" width="160" alt="4 circles in a square" /> | <img src="https://raw.githubusercontent.com/philihp/pointille/main/docs/demo/pentagon-n4-r1_1.svg" width="160" alt="4 circles in a pentagon" /> | <img src="https://raw.githubusercontent.com/philihp/pointille/main/docs/demo/l-shape-n4-r1_1.svg" width="160" alt="4 circles in an L-shape" /> |
+| **n = 8, r = 0.7** | <img src="https://raw.githubusercontent.com/philihp/pointille/main/docs/demo/triangle-n8-r0_7.svg" width="160" alt="8 circles in a triangle" /> | <img src="https://raw.githubusercontent.com/philihp/pointille/main/docs/demo/square-n8-r0_7.svg" width="160" alt="8 circles in a square" /> | <img src="https://raw.githubusercontent.com/philihp/pointille/main/docs/demo/pentagon-n8-r0_7.svg" width="160" alt="8 circles in a pentagon" /> | <img src="https://raw.githubusercontent.com/philihp/pointille/main/docs/demo/l-shape-n8-r0_7.svg" width="160" alt="8 circles in an L-shape" /> |
+
+When `n` circles of the requested radius cannot fit — provably (total circle area exceeds the polygon's area, or the radius exceeds the polygon's inradius) or practically (the packing is too tight to converge) — `pointille` throws a `PointilleFitError` with a message suggesting a smaller `radius` or `n`. Packings up to roughly 55–65% area coverage are practical; corridors narrower than `2 * radius` are unusable regardless of total area.
+
+```ts
+import { pointille, PointilleFitError } from 'pointille'
+
+try {
+  pointille(unitSquare, 10, { radius: 0.3 }) // 10·π·0.3² ≈ 2.83 > 1
+} catch (e) {
+  if (e instanceof PointilleFitError) console.log(e.message)
+}
+```
+
 ### Options
 
 ```ts
 pointille(polygon, n, {
   iterations: 30,    // Lloyd relaxation steps. Default: 30.
   seed: 1,           // Starting index into the Halton seed sequence. Default: 1.
+  radius: 0,         // Circle radius per point; 0 = dimensionless. Default: 0.
 })
 ```
 
@@ -63,6 +91,7 @@ Changing `seed` is the canonical way to get a different — but still determinis
     - Clip each Voronoi cell to the polygon via [`polygon-clipping`](https://github.com/mfogel/polygon-clipping) so that we handle concave polygons.
     - Move each site to the area-weighted centroid of its clipped cell.
 3. Stop after `iterations` steps (default 30). The result is a centroidal Voronoi tessellation: each cell's site is at its own centroid, which gives the visual "even distribution" property.
+4. **(With `radius`.)** Seeds are restricted to the *safe region* — points at least `radius` from the boundary — and after each Lloyd step centers are clamped back into it. A final separation pass then resolves any remaining overlaps: close pairs (found via the Delaunay graph) are pushed apart symmetrically, re-clamped, and the result is verified exactly against both constraints before being returned.
 
 The function is **pure and deterministic**: same inputs → byte-identical outputs.
 
