@@ -1,0 +1,13 @@
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="6 circles of radius 0.9 in polygon">
+  <style>
+    .bg { fill: #fff; }
+    .cells path { fill: rgba(80, 110, 200, 0.06); stroke: #b6bdcd; stroke-width: 0.6; }
+    .boundary { fill: none; stroke: #1a1a1a; stroke-width: 1.4; stroke-linejoin: round; }
+    .sites circle { fill: #c2410c; stroke: #fff; stroke-width: 1; }
+    .sites circle.disc { fill: rgba(194, 65, 12, 0.25); stroke: #c2410c; stroke-width: 1.2; }
+  </style>
+  <rect class="bg" width="100%" height="100%" />
+  <g class="cells"><path d="M107.28,14.00 L108.38,61.42 L133.60,89.44 L206.00,83.72 L206.00,14.00 Z" /><path d="M14.00,107.45 L49.12,108.93 L108.38,61.42 L107.28,14.00 L14.00,14.00 Z" /><path d="M14.00,206.00 L85.83,206.00 L89.92,141.00 L49.12,108.93 L14.00,107.45 Z" /><path d="M85.83,206.00 L206.00,206.00 L206.00,199.48 L126.02,128.98 L89.92,141.00 Z" /><path d="M126.02,128.98 L206.00,199.48 L206.00,83.72 L133.60,89.44 Z" /><path d="M49.12,108.93 L89.92,141.00 L126.02,128.98 L133.60,89.44 L108.38,61.42 Z" /></g>
+  <path class="boundary" d="M14.00,206.00 L206.00,206.00 L206.00,14.00 L14.00,14.00 Z" />
+  <g class="sites"><circle class="disc" cx="153.88" cy="57.76" r="17.28" /><circle cx="153.88" cy="57.76" r="2" /><circle class="disc" cx="62.75" cy="59.87" r="17.28" /><circle cx="62.75" cy="59.87" r="2" /><circle class="disc" cx="58.57" cy="158.97" r="17.28" /><circle cx="58.57" cy="158.97" r="2" /><circle class="disc" cx="118.76" cy="162.75" r="17.28" /><circle cx="118.76" cy="162.75" r="2" /><circle class="disc" cx="158.61" cy="117.54" r="17.28" /><circle cx="158.61" cy="117.54" r="2" /><circle class="disc" cx="99.98" cy="106.29" r="17.28" /><circle cx="99.98" cy="106.29" r="2" /></g>
+</svg>

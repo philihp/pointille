@@ -1,0 +1,10 @@
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5 circles of r=0.5 don't fit">
+  <style>
+    .bg { fill: #fff; }
+    .boundary { fill: none; stroke: #1a1a1a; stroke-width: 1.4; stroke-linejoin: round; }
+    .note { font: 11px -apple-system, system-ui, sans-serif; fill: #999; text-anchor: middle; }
+  </style>
+  <rect class="bg" width="100%" height="100%" />
+  <path class="boundary" d="M70.81,206.00 L149.19,206.00 L110.00,14.00 Z" />
+  <text class="note" x="110" y="204">5 circles of r=0.5 don't fit</text>
+</svg>

@@ -1,0 +1,13 @@
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="8 circles of radius 0.7 in polygon">
+  <style>
+    .bg { fill: #fff; }
+    .cells path { fill: rgba(80, 110, 200, 0.06); stroke: #b6bdcd; stroke-width: 0.6; }
+    .boundary { fill: none; stroke: #1a1a1a; stroke-width: 1.4; stroke-linejoin: round; }
+    .sites circle { fill: #c2410c; stroke: #fff; stroke-width: 1; }
+    .sites circle.disc { fill: rgba(194, 65, 12, 0.25); stroke: #c2410c; stroke-width: 1.2; }
+  </style>
+  <rect class="bg" width="100%" height="100%" />
+  <g class="cells"><path d="M51.69,137.56 L69.84,153.49 L105.26,146.42 L123.12,110.00 L110.00,110.00 L110.00,97.41 L76.43,100.77 Z" /><path d="M14.00,206.00 L69.85,206.00 L69.84,153.49 L51.69,137.56 L14.00,136.81 Z" /><path d="M105.26,146.42 L134.77,206.00 L139.29,206.00 L167.60,110.00 L123.12,110.00 Z" /><path d="M14.00,136.81 L51.69,137.56 L76.43,100.77 L49.25,74.10 L14.00,76.15 Z" /><path d="M139.29,206.00 L206.00,206.00 L206.00,110.00 L167.60,110.00 Z" /><path d="M69.84,153.49 L69.85,206.00 L134.77,206.00 L105.26,146.42 Z" /><path d="M14.00,76.15 L49.25,74.10 L97.48,14.00 L14.00,14.00 Z" /><path d="M49.25,74.10 L76.43,100.77 L110.00,97.41 L110.00,14.00 L97.48,14.00 Z" /></g>
+  <path class="boundary" d="M14.00,206.00 L206.00,206.00 L206.00,110.00 L110.00,110.00 L110.00,14.00 L14.00,14.00 Z" />
+  <g class="sites"><circle class="disc" cx="84.43" cy="128.20" r="13.44" /><circle cx="84.43" cy="128.20" r="2" /><circle class="disc" cx="46.66" cy="171.25" r="13.44" /><circle cx="46.66" cy="171.25" r="2" /><circle class="disc" cx="132.42" cy="151.73" r="13.44" /><circle cx="132.42" cy="151.73" r="2" /><circle class="disc" cx="48.01" cy="103.70" r="13.44" /><circle cx="48.01" cy="103.70" r="2" /><circle class="disc" cx="174.51" cy="164.15" r="13.44" /><circle cx="174.51" cy="164.15" r="2" /><circle class="disc" cx="93.03" cy="171.24" r="13.44" /><circle cx="93.03" cy="171.24" r="2" /><circle class="disc" cx="44.59" cy="44.83" r="13.44" /><circle cx="44.59" cy="44.83" r="2" /><circle class="disc" cx="78.82" cy="72.31" r="13.44" /><circle cx="78.82" cy="72.31" r="2" /></g>
+</svg>

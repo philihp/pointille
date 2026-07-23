@@ -9,7 +9,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { pointille, type Point, type Polygon } from '../src/index.js'
+import { pointille, PointilleFitError, type Point, type Polygon } from '../src/index.js'
 import { boundingBox } from '../src/geometry.js'
 
 // ---------- shapes ----------
@@ -31,6 +31,16 @@ const pentagon: Polygon = Array.from({ length: 5 }, (_, i) => {
   return [5 + 5 * Math.cos(angle), 5 + 5 * Math.sin(angle)] as Point
 })
 
+// Concave L-shape, 10 units across with 5-unit-wide arms.
+const lShape: Polygon = [
+  [0, 0],
+  [10, 0],
+  [10, 5],
+  [5, 5],
+  [5, 10],
+  [0, 10],
+]
+
 const shapes: ReadonlyArray<{ name: string; polygon: Polygon }> = [
   { name: 'Triangle', polygon: triangle },
   { name: 'Square', polygon: square },
@@ -38,6 +48,44 @@ const shapes: ReadonlyArray<{ name: string; polygon: Polygon }> = [
 ]
 
 const counts = [4, 5, 6, 7]
+
+// Radius demo: same shapes plus the concave L, points drawn as true-size
+// circles so containment and non-overlap are visually checkable.
+const radiusShapes: ReadonlyArray<{ name: string; polygon: Polygon }> = [
+  ...shapes,
+  { name: 'L-shape', polygon: lShape },
+]
+
+const radiusRows: ReadonlyArray<{ n: number; radius: number }> = [
+  { n: 4, radius: 1.1 },
+  { n: 6, radius: 0.9 },
+  { n: 8, radius: 0.7 },
+]
+
+// Tall isosceles triangle with sides 5:5:2 — a narrow wedge that stresses
+// boundary handling near the sharp apex.
+const isosceles: Polygon = [
+  [0, 0],
+  [2, 0],
+  [1, Math.sqrt(24)],
+]
+
+// Example grid for the README/PR: four shapes × three radius rows. The
+// isosceles is ~5 units tall (much smaller than the 10-unit shapes), so a
+// uniform radius reads very differently across columns — and 5 circles of
+// r = 0.5 simply do not fit in it (rendered as an empty cell).
+const exampleShapes: ReadonlyArray<{ name: string; label: string; polygon: Polygon; n: number }> = [
+  { name: 'triangle', label: 'Triangle, n = 4', polygon: triangle, n: 4 },
+  { name: 'pentagon', label: 'Pentagon, n = 8', polygon: pentagon, n: 8 },
+  { name: 'l-shape', label: 'Concave L, n = 8', polygon: lShape, n: 8 },
+  { name: 'isosceles-5-5-2', label: '5:5:2 triangle, n = 5', polygon: isosceles, n: 5 },
+]
+
+const exampleRows: ReadonlyArray<{ label: string; radii: ReadonlyArray<number> }> = [
+  { label: 'radius = 0', radii: [0, 0, 0, 0] },
+  { label: 'radius = 0.5 / 0.5 / 0.5 / 0.1', radii: [0.5, 0.5, 0.5, 0.1] },
+  { label: 'radius = 1.1 / 0.7 / 0.7 / 0.2', radii: [1.1, 0.7, 0.7, 0.2] },
+]
 
 // ---------- Voronoi cells clipped to polygon (for the visualization) ----------
 const toMultiPoly = (poly: Polygon): [number, number][][][] => {
@@ -82,7 +130,8 @@ const fitTransform = (polygon: Polygon) => {
   const offX = (VB - w * scale) / 2 - minX * scale
   const offY = (VB - h * scale) / 2 - minY * scale
   // SVG y-axis points down; flip to keep math conventions visually right-side-up.
-  return ([x, y]: Point): [number, number] => [x * scale + offX, VB - (y * scale + offY)]
+  const project = ([x, y]: Point): [number, number] => [x * scale + offX, VB - (y * scale + offY)]
+  return { project, scale }
 }
 
 const polygonToPath = (poly: Polygon, project: (p: Point) => [number, number]): string => {
@@ -98,10 +147,10 @@ const polygonToPath = (poly: Polygon, project: (p: Point) => [number, number]): 
   return `M${hx.toFixed(2)},${hy.toFixed(2)} ${rest} Z`
 }
 
-const buildSvg = (polygon: Polygon, n: number): string => {
-  const points = pointille(polygon, n)
+const buildSvg = (polygon: Polygon, n: number, radius = 0): string => {
+  const points = pointille(polygon, n, { radius })
   const cells = clippedVoronoiCells(points, polygon)
-  const project = fitTransform(polygon)
+  const { project, scale } = fitTransform(polygon)
   const cellPaths = cells
     .filter((c) => c.length >= 3)
     .map((c) => `<path d="${polygonToPath(c, project)}" />`)
@@ -110,15 +159,23 @@ const buildSvg = (polygon: Polygon, n: number): string => {
   const dots = points
     .map((p) => {
       const [x, y] = project(p)
+      // With a radius, draw circles at true size (plus a center dot); the
+      // hardcoded 4px dot is only for dimensionless points.
+      if (radius > 0) {
+        const r = (radius * scale).toFixed(2)
+        return `<circle class="disc" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r}" /><circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2" />`
+      }
       return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="4" />`
     })
     .join('')
-  return `<svg viewBox="0 0 ${VB} ${VB}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${n} points in polygon">
+  const label = radius > 0 ? `${n} circles of radius ${radius} in polygon` : `${n} points in polygon`
+  return `<svg viewBox="0 0 ${VB} ${VB}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${label}">
   <style>
     .bg { fill: #fff; }
     .cells path { fill: rgba(80, 110, 200, 0.06); stroke: #b6bdcd; stroke-width: 0.6; }
     .boundary { fill: none; stroke: #1a1a1a; stroke-width: 1.4; stroke-linejoin: round; }
     .sites circle { fill: #c2410c; stroke: #fff; stroke-width: 1; }
+    .sites circle.disc { fill: rgba(194, 65, 12, 0.25); stroke: #c2410c; stroke-width: 1.2; }
   </style>
   <rect class="bg" width="100%" height="100%" />
   <g class="cells">${cellPaths}</g>
@@ -127,8 +184,53 @@ const buildSvg = (polygon: Polygon, n: number): string => {
 </svg>`
 }
 
+// Outline-only panel with a note, for a (shape, n, radius) that cannot fit.
+const emptySvg = (polygon: Polygon, note: string): string => {
+  const { project } = fitTransform(polygon)
+  const boundary = polygonToPath(polygon, project)
+  return `<svg viewBox="0 0 ${VB} ${VB}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${note}">
+  <style>
+    .bg { fill: #fff; }
+    .boundary { fill: none; stroke: #1a1a1a; stroke-width: 1.4; stroke-linejoin: round; }
+    .note { font: 11px -apple-system, system-ui, sans-serif; fill: #999; text-anchor: middle; }
+  </style>
+  <rect class="bg" width="100%" height="100%" />
+  <path class="boundary" d="${boundary}" />
+  <text class="note" x="${VB / 2}" y="${VB - 16}">${note}</text>
+</svg>`
+}
+
+// Build the example grid once: each cell is either the circle layout or, when
+// that many circles of that radius cannot fit, an outline panel. The result
+// feeds both the standalone docs/demo SVGs and the HTML page.
+const exampleGrid = exampleRows.map((row) =>
+  exampleShapes.map((shape, col) => {
+    const radius = row.radii[col]!
+    const suffix = radius > 0 ? `-r${String(radius).replace('.', '_')}` : ''
+    const file = `${shape.name}-n${shape.n}${suffix}.svg`
+    let svg: string
+    try {
+      svg = buildSvg(shape.polygon, shape.n, radius)
+    } catch (e) {
+      if (!(e instanceof PointilleFitError)) throw e
+      svg = emptySvg(shape.polygon, `${shape.n} circles of r=${radius} don't fit`)
+    }
+    return { file, svg }
+  }),
+)
+
 // ---------- HTML assembly ----------
 const headerRow = `<tr>${shapes.map((s) => `<th>${s.name}</th>`).join('')}</tr>`
+
+const exampleHeaderRow = `<tr><th></th>${exampleShapes.map((s) => `<th>${s.label}</th>`).join('')}</tr>`
+const exampleBodyRows = exampleRows
+  .map((row, ri) => {
+    const cells = exampleGrid[ri]!
+      .map(({ svg }) => `<td><div class="cell">${svg}</div></td>`)
+      .join('')
+    return `<tr><th class="rowlabel">${row.label}</th>${cells}</tr>`
+  })
+  .join('\n')
 
 const bodyRows = counts
   .map((n) => {
@@ -136,6 +238,20 @@ const bodyRows = counts
       .map(
         ({ polygon }) =>
           `<td><div class="cell"><span class="label">n = ${n}</span>${buildSvg(polygon, n)}</div></td>`,
+      )
+      .join('')
+    return `<tr>${cells}</tr>`
+  })
+  .join('\n')
+
+const radiusHeaderRow = `<tr>${radiusShapes.map((s) => `<th>${s.name}</th>`).join('')}</tr>`
+
+const radiusBodyRows = radiusRows
+  .map(({ n, radius }) => {
+    const cells = radiusShapes
+      .map(
+        ({ polygon }) =>
+          `<td><div class="cell"><span class="label">n = ${n}, r = ${radius}</span>${buildSvg(polygon, n, radius)}</div></td>`,
       )
       .join('')
     return `<tr>${cells}</tr>`
@@ -181,6 +297,10 @@ const html = `<!doctype html>
       font-size: 11px; color: var(--muted);
       font-variant-numeric: tabular-nums;
     }
+    th.rowlabel {
+      font-weight: 600; font-size: 12px; text-align: right;
+      padding-right: 12px; white-space: nowrap; border-bottom: none;
+    }
     svg { display: block; width: 100%; height: 100%; }
     svg .cells path {
       fill: var(--cell);
@@ -209,6 +329,22 @@ const html = `<!doctype html>
 ${bodyRows}
     </tbody>
   </table>
+  <h1 style="margin-top: 40px;">with radius</h1>
+  <p class="sub">Points as circles: every circle stays fully inside the polygon and no two circles overlap (<code>pointille(polygon, n, { radius })</code>).</p>
+  <table>
+    <thead>${radiusHeaderRow}</thead>
+    <tbody>
+${radiusBodyRows}
+    </tbody>
+  </table>
+  <h1 style="margin-top: 40px;">radius comparison</h1>
+  <p class="sub">Same four shapes and point counts at three radius settings. The 5:5:2 triangle is much smaller than the 10-unit shapes, so a uniform radius reads differently across columns — and 5 circles of r = 0.5 do not fit in it.</p>
+  <table>
+    <thead>${exampleHeaderRow}</thead>
+    <tbody>
+${exampleBodyRows}
+    </tbody>
+  </table>
 </body>
 </html>`
 
@@ -225,6 +361,19 @@ const slug = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 for (const { name, polygon } of shapes) {
   for (const n of counts) {
     writeFileSync(join(docsDir, `${slug(name)}-n${n}.svg`), buildSvg(polygon, n), 'utf8')
+  }
+}
+for (const { name, polygon } of radiusShapes) {
+  for (const { n, radius } of radiusRows) {
+    const file = `${slug(name)}-n${n}-r${String(radius).replace('.', '_')}.svg`
+    writeFileSync(join(docsDir, file), buildSvg(polygon, n, radius), 'utf8')
+  }
+}
+
+// The README/PR example grid (four shapes × three radius rows).
+for (const rowCells of exampleGrid) {
+  for (const { file, svg } of rowCells) {
+    writeFileSync(join(docsDir, file), svg, 'utf8')
   }
 }
 
