@@ -290,14 +290,19 @@ for (const { name, polygon } of radiusShapes) {
 
 // Tall isosceles triangle with sides 5:5:2 — a narrow wedge that stresses
 // boundary handling near the sharp apex.
-{
-  const isosceles: Polygon = [
-    [0, 0],
-    [2, 0],
-    [1, Math.sqrt(24)],
-  ]
-  writeFileSync(join(docsDir, 'isosceles-5-5-2-n5-r0_1.svg'), buildSvg(isosceles, 5, 0.1), 'utf8')
-}
+const isosceles: Polygon = [
+  [0, 0],
+  [2, 0],
+  [1, Math.sqrt(24)],
+]
+writeFileSync(join(docsDir, 'isosceles-5-5-2-n5-r0_1.svg'), buildSvg(isosceles, 5, 0.1), 'utf8')
+
+// Radius-0 counterparts of the README/PR example panels, for side-by-side
+// comparison with the circle versions. (triangle-n4.svg comes from the
+// main loop above.)
+writeFileSync(join(docsDir, 'pentagon-n8.svg'), buildSvg(pentagon, 8), 'utf8')
+writeFileSync(join(docsDir, 'l-shape-n8.svg'), buildSvg(lShape, 8), 'utf8')
+writeFileSync(join(docsDir, 'isosceles-5-5-2-n5.svg'), buildSvg(isosceles, 5), 'utf8')
 
 console.log(`Wrote demo to: ${outPath}`)
 console.log(`Wrote per-combo SVGs to: ${docsDir}`)
