@@ -82,6 +82,20 @@ describe('pointille with radius — balanced gaps', () => {
     assert.ok(minWall > 0.3, `minWall=${minWall.toFixed(3)}`)
   })
 
+  it('skinny isosceles triangle (sides 5:5:1) packs a vertical column', () => {
+    // A narrow wedge: the sharp apex (~11°) requires the clamp to escape
+    // along the bisector rather than perpendicular to a single wall.
+    const iso: Polygon = [
+      [0, 0],
+      [1, 0],
+      [0.5, Math.sqrt(25 - 0.25)],
+    ]
+    const { wallGaps, pairGap } = gaps(iso, 5, 0.2)
+    for (const g of wallGaps) assert.ok(g >= -1e-6, `wall gap ${g}`)
+    assert.ok(pairGap >= -1e-6, `pair gap ${pairGap}`)
+    assert.ok(Math.min(...wallGaps) >= 0.5 * pairGap, 'balanced against the walls')
+  })
+
   it('n=1 lands at the deepest interior point', () => {
     const [p] = pointille(unitSquare, 1, { radius: 0.2 })
     assert.ok(Math.hypot(p![0] - 0.5, p![1] - 0.5) < 0.05, `center at ${p!.join(',')}`)

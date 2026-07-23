@@ -54,16 +54,21 @@ export const distanceToBoundary = (polygon: Polygon): ((p: Point) => number) => 
   return (p) => nearest(p).dist
 }
 
-const MAX_CLAMP_ITERS = 16
+const MAX_CLAMP_ITERS = 24
+// Expanding step ladder for the line search: in a wedge of half-angle θ the
+// distance-to-boundary grows only at rate sin(θ) along the bisector, so the
+// needed step can be far larger than the deficit; 2^8 covers θ down to ~0.2°.
+const STEP_LADDER = [1, 2, 4, 8, 16, 32, 64, 128, 256]
 
-// Push a point into the safe region for radius r. Alternating projection:
-// each iterate pushes radially away from the current nearest boundary
-// feature; near a convex corner the nearest feature alternates between the
-// two edges, near a reflex vertex a single push away from the vertex
-// satisfies the constraint directly. Stops on non-improvement (e.g. necks
-// narrower than 2r, where no local safe point exists) and returns the best
-// iterate seen — callers verify the result rather than trusting it.
+// Push a point into the safe region for radius r. Each iterate moves along
+// the combined direction away from every wall closer than r — the inward
+// normal at a flat wall, the bisector inside a wedge — with an expanding
+// line search on the step size (see STEP_LADDER). Stops when no step
+// improves (e.g. necks narrower than 2r, where no local safe point exists)
+// and returns the best iterate seen — callers verify the result rather than
+// trusting it.
 export const clampToSafeRegion = (polygon: Polygon, r: number): ((p: Point) => Point) => {
+  const n = polygon.length
   const nearest = nearestBoundaryPoint(polygon)
   const inside = pointInPolygon(polygon)
   const orientation = signedArea(polygon) >= 0 ? 1 : -1
@@ -75,13 +80,36 @@ export const clampToSafeRegion = (polygon: Polygon, r: number): ((p: Point) => P
 
   const inwardNormal = (edge: number): Point => {
     const a = polygon[edge]!
-    const b = polygon[(edge + 1) % polygon.length]!
+    const b = polygon[(edge + 1) % n]!
     const dx = b[0] - a[0]
     const dy = b[1] - a[1]
     const len = Math.hypot(dx, dy)
     if (len < delta) return [0, 0]
     // CCW polygons keep the interior on the edge's left.
     return [(-dy / len) * orientation, (dx / len) * orientation]
+  }
+
+  // Combined escape direction: sum of unit vectors away from each wall
+  // closer than r. Opposing near walls cancel to ~zero — correctly
+  // signalling that no direction helps.
+  const escapeDirection = (p: Point): Point => {
+    let sx = 0
+    let sy = 0
+    for (let i = 0; i < n; i++) {
+      const q = nearestOnSegment(p, polygon[i]!, polygon[(i + 1) % n]!)
+      const d = Math.hypot(p[0] - q[0], p[1] - q[1])
+      if (d >= r) continue
+      if (d > delta) {
+        sx += (p[0] - q[0]) / d
+        sy += (p[1] - q[1]) / d
+      } else {
+        const [nx, ny] = inwardNormal(i)
+        sx += nx
+        sy += ny
+      }
+    }
+    const len = Math.hypot(sx, sy)
+    return len < 0.1 ? [0, 0] : [sx / len, sy / len]
   }
 
   return (p) => {
@@ -91,31 +119,43 @@ export const clampToSafeRegion = (polygon: Polygon, r: number): ((p: Point) => P
     let best = cur
     let bestDist = inside(cur) ? curHit.dist : -Infinity
     for (let iter = 0; iter < MAX_CLAMP_ITERS; iter++) {
-      const { point: q, dist, edge } = curHit
-      let ux: number
-      let uy: number
-      if (dist > delta) {
-        const sign = inside(cur) ? 1 : -1
-        ux = (sign * (cur[0] - q[0])) / dist
-        uy = (sign * (cur[1] - q[1])) / dist
-      } else {
-        ;[ux, uy] = inwardNormal(edge)
+      if (!inside(cur)) {
+        // Project just inside via the nearest feature, then continue.
+        const { point: q, dist, edge } = curHit
+        const [ux, uy] =
+          dist > delta
+            ? [(q[0] - cur[0]) / dist, (q[1] - cur[1]) / dist]
+            : inwardNormal(edge)
         if (ux === 0 && uy === 0) break
+        const entered: Point = [q[0] + target * ux, q[1] + target * uy]
+        if (!inside(entered)) break
+        cur = entered
+        curHit = nearest(cur)
+      } else {
+        const [ux, uy] = escapeDirection(cur)
+        if (ux === 0 && uy === 0) break
+        const deficit = target - curHit.dist
+        let stepped: Point | null = null
+        let steppedDist = curHit.dist
+        for (const mult of STEP_LADDER) {
+          const t = deficit * mult
+          const cand: Point = [cur[0] + t * ux, cur[1] + t * uy]
+          if (!inside(cand)) continue
+          const d = nearest(cand).dist
+          if (d > steppedDist) {
+            stepped = cand
+            steppedDist = d
+          }
+        }
+        if (stepped === null) break
+        cur = stepped
+        curHit = nearest(cur)
       }
-      const next: Point = [q[0] + target * ux, q[1] + target * uy]
-      if (!inside(next)) break
-      const nextHit = nearest(next)
-      // Plateau steps are allowed (pushing off one wall of a corner leaves
-      // the other wall equally close for one iteration); only a strict
-      // regression means the local safe region is unreachable.
-      if (nextHit.dist < curHit.dist) break
-      cur = next
-      curHit = nextHit
-      if (nextHit.dist > bestDist) {
-        best = next
-        bestDist = nextHit.dist
+      if (inside(cur) && curHit.dist > bestDist) {
+        best = cur
+        bestDist = curHit.dist
       }
-      if (nextHit.dist >= r) return next
+      if (inside(cur) && curHit.dist >= r) return cur
     }
     return best
   }
