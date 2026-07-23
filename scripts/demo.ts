@@ -82,8 +82,8 @@ const exampleShapes: ReadonlyArray<{ name: string; label: string; polygon: Polyg
 ]
 
 const exampleRows: ReadonlyArray<{ label: string; radii: ReadonlyArray<number> }> = [
-  { label: 'radius = 0.5', radii: [0.5, 0.5, 0.5, 0.5] },
   { label: 'radius = 0', radii: [0, 0, 0, 0] },
+  { label: 'radius = 0.5 / 0.5 / 0.5 / 0.1', radii: [0.5, 0.5, 0.5, 0.1] },
   { label: 'radius = 1.1 / 0.7 / 0.7 / 0.2', radii: [1.1, 0.7, 0.7, 0.2] },
 ]
 
