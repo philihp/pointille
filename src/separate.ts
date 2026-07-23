@@ -10,12 +10,21 @@ export type PackingCheck = {
   readonly minBoundary: number
 }
 
+// Spacing constraints on circle centers: at least `wallInset` from the
+// polygon boundary and at least `pairDistance` from each other. The base
+// guarantee for circles of radius r is {wallInset: r, pairDistance: 2r};
+// balanced placement tightens both.
+export type PackingConstraints = {
+  readonly wallInset: number
+  readonly pairDistance: number
+}
+
 // Exact O(n²) check of both packing constraints. This is what makes the
 // guarantee hard: the iterative clamp/separation heuristics only ever
 // terminate through this.
 export const verifyPacking = (
   polygon: Polygon,
-  r: number,
+  { wallInset, pairDistance }: PackingConstraints,
   points: ReadonlyArray<Point>,
   epsilon: number,
 ): PackingCheck => {
@@ -33,7 +42,7 @@ export const verifyPacking = (
     }
   }
   return {
-    ok: minPairwise >= 2 * r - epsilon && minBoundary >= r - epsilon,
+    ok: minPairwise >= pairDistance - epsilon && minBoundary >= wallInset - epsilon,
     minPairwise,
     minBoundary,
   }
@@ -49,8 +58,12 @@ const GOLDEN_ANGLE = 2.399963229728653
 // symmetric push-apart displacements, applies them all at once (Jacobi —
 // order-independent beyond the fixed i < j summation order), and clamps
 // moved points back into the safe region.
-export const separate = (polygon: Polygon, r: number): ((points: ReadonlyArray<Point>) => Point[]) => {
-  const clamp = clampToSafeRegion(polygon, r)
+export const separate = (
+  polygon: Polygon,
+  constraints: PackingConstraints,
+): ((points: ReadonlyArray<Point>) => Point[]) => {
+  const { wallInset, pairDistance } = constraints
+  const clamp = clampToSafeRegion(polygon, wallInset)
   const [[minX, minY], [maxX, maxY]] = boundingBox(polygon)
   const scale = Math.max(maxX - minX, maxY - minY, 1)
   const epsilon = 1e-9 * scale
@@ -59,7 +72,7 @@ export const separate = (polygon: Polygon, r: number): ((points: ReadonlyArray<P
   return (points) => {
     let pts: Point[] = points.map(clamp)
     for (let step = 0; step < MAX_SEPARATION_STEPS; step++) {
-      const check = verifyPacking(polygon, r, pts, epsilon)
+      const check = verifyPacking(polygon, constraints, pts, epsilon)
       if (check.ok) return pts
       if (pts.length < 2) break // single point out of reach of the clamp
 
@@ -72,9 +85,9 @@ export const separate = (polygon: Polygon, r: number): ((points: ReadonlyArray<P
         const [ax, ay] = pts[i]!
         const [bx, by] = pts[j]!
         const d = Math.hypot(ax - bx, ay - by)
-        if (d >= 2 * r) return
+        if (d >= pairDistance) return
         pushed = true
-        const push = (BETA * (2 * r - d)) / 2
+        const push = (BETA * (pairDistance - d)) / 2
         let ux: number
         let uy: number
         if (d > delta) {
@@ -106,11 +119,12 @@ export const separate = (polygon: Polygon, r: number): ((points: ReadonlyArray<P
         dx[i] === 0 && dy[i] === 0 ? p : clamp([p[0] + dx[i]!, p[1] + dy[i]!]),
       )
     }
-    const { minPairwise, minBoundary } = verifyPacking(polygon, r, pts, epsilon)
+    const { minPairwise, minBoundary } = verifyPacking(polygon, constraints, pts, epsilon)
     throw new PointilleFitError(
-      `could not arrange ${pts.length} non-overlapping circles of radius ${r} inside the polygon ` +
-        `(min center distance ${minPairwise.toFixed(6)} < ${2 * r}, or min boundary distance ` +
-        `${minBoundary.toFixed(6)} < ${r}); the packing is too tight — reduce radius or n`,
+      `could not arrange ${pts.length} circle centers at pairwise distance >= ${pairDistance} ` +
+        `and boundary distance >= ${wallInset} inside the polygon ` +
+        `(min center distance ${minPairwise.toFixed(6)}, min boundary distance ` +
+        `${minBoundary.toFixed(6)}); the packing is too tight — reduce radius or n`,
     )
   }
 }

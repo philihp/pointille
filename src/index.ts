@@ -15,7 +15,10 @@ export type PointilleOptions = {
    * Radius of a circle centered on each returned point. When > 0, the result
    * is guaranteed to satisfy two hard constraints: every circle lies fully
    * inside the polygon (center at least `radius` from the boundary) and no
-   * two circles overlap (centers at least `2 * radius` apart). Throws
+   * two circles overlap (centers at least `2 * radius` apart). Placement is
+   * balanced: the layout maximizes an equal breathing gap, so the space
+   * between circles matches the space between each circle and the polygon
+   * edge instead of circles hugging the boundary. Throws
    * {@link PointilleFitError} when `n` circles of this radius cannot fit.
    * Default: 0 (dimensionless points, identical to omitting the option).
    */
@@ -27,6 +30,7 @@ export { PointilleFitError } from './errors.js'
 
 const DEFAULT_ITERATIONS = 30
 const DEFAULT_SEED = 1
+const BISECTION_STEPS = 18
 
 // Deterministic candidate-point scan: scale 2D Halton samples into the
 // polygon's bounding box and collect those that pass the acceptance test.
@@ -94,17 +98,84 @@ export const pointille = (bound: Polygon, n: number, options: PointilleOptions =
 
   const inside = pointInPolygon(bound)
   const boundary = distanceToBoundary(bound)
-  const accept = (p: Point): boolean => inside(p) && boundary(p) >= radius
-  const points = seedPoints(bound, n, seed, accept)
-  if (points.length < n) {
+
+  // Solve the packing for an effective radius R: centers pairwise >= 2R and
+  // >= 2R - r from the boundary. At R = r these are exactly the base
+  // guarantees; larger R adds equal breathing room between circles and
+  // against the wall (surface gap g = 2(R - r) in both cases), which is what
+  // makes the layout look balanced. Returns null when infeasible.
+  const solve = (R: number, lloydIterations: number): Point[] | null => {
+    const wallInset = 2 * R - radius
+    const accept = (p: Point): boolean => inside(p) && boundary(p) >= wallInset
+    const seeds = seedPoints(bound, n, seed, accept)
+    if (seeds.length < n) return null
+    const relaxed = lloydRelax(bound, lloydIterations, clampToSafeRegion(bound, wallInset))(seeds)
+    try {
+      return separate(bound, { wallInset, pairDistance: 2 * R })(relaxed)
+    } catch (e) {
+      if (e instanceof PointilleFitError) return null
+      throw e
+    }
+  }
+
+  // Baseline at R = r — the hard minimum. Diagnose its failure modes with
+  // descriptive errors before searching for a more spacious layout.
+  const baseline = solve(radius, iterations)
+  if (baseline === null) {
+    const accept = (p: Point): boolean => inside(p) && boundary(p) >= radius
+    const seeds = seedPoints(bound, n, seed, accept)
+    if (seeds.length < n) {
+      throw new PointilleFitError(
+        `found only ${seeds.length} of ${n} seed centers at distance >= ${radius} from the ` +
+          `boundary — the safe region is too small or empty; reduce radius or n`,
+      )
+    }
     throw new PointilleFitError(
-      `found only ${points.length} of ${n} seed centers at distance >= ${radius} from the ` +
-        `boundary — the safe region is too small or empty; reduce radius or n`,
+      `could not arrange ${n} non-overlapping circles of radius ${radius} inside the polygon; ` +
+        `the packing is too tight — reduce radius or n`,
     )
   }
 
-  const relaxed = lloydRelax(bound, iterations, clampToSafeRegion(bound, radius))(points)
-  return separate(bound, radius)(relaxed)
+  // Bisect for the largest feasible effective radius. Upper bound from the
+  // area (n·πR² <= area) and from the deepest point observed in a
+  // deterministic candidate scan (the wall constraint 2R - r <= dmax).
+  let dmax = 0
+  const dmaxBudget = Math.max(1000, n * 2000)
+  const [[minX, minY], [maxX, maxY]] = boundingBox(bound)
+  for (let k = 0; k < dmaxBudget; k++) {
+    const [u, v] = haltonPoint(seed + k)
+    const p: Point = [minX + u * (maxX - minX), minY + v * (maxY - minY)]
+    if (inside(p)) {
+      const d = boundary(p)
+      if (d > dmax) dmax = d
+    }
+  }
+  const hi = Math.max(radius, Math.min(Math.sqrt(area / (n * Math.PI)), (dmax + radius) / 2))
+
+  const probeIterations = Math.min(iterations, 10)
+  let lo = radius
+  let hiBound = hi
+  let bestR = radius
+  let best: Point[] = baseline
+  for (let step = 0; step < BISECTION_STEPS; step++) {
+    const mid = (lo + hiBound) / 2
+    const attempt = solve(mid, probeIterations)
+    if (attempt !== null) {
+      lo = mid
+      bestR = mid
+      best = attempt
+    } else {
+      hiBound = mid
+    }
+  }
+
+  // Final polish: re-solve at the best R with the full iteration budget for
+  // the smoothest layout; the probe result is a verified fallback.
+  if (bestR > radius) {
+    const polished = solve(bestR, iterations)
+    if (polished !== null) return polished
+  }
+  return best
 }
 
 export default pointille

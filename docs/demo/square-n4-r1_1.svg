@@ -7,7 +7,7 @@
     .sites circle.disc { fill: rgba(194, 65, 12, 0.25); stroke: #c2410c; stroke-width: 1.2; }
   </style>
   <rect class="bg" width="100%" height="100%" />
-  <g class="cells"><path d="M110.00,110.00 L110.00,110.00 L206.00,110.00 L206.00,14.00 L110.00,14.00 Z" /><path d="M14.00,110.00 L110.00,110.00 L110.00,14.00 L14.00,14.00 Z" /><path d="M110.00,206.00 L206.00,206.00 L206.00,110.00 L110.00,110.00 Z" /><path d="M14.00,206.00 L110.00,206.00 L110.00,110.00 L110.00,110.00 L14.00,110.00 Z" /></g>
+  <g class="cells"><path d="M110.00,206.00 L206.00,206.00 L206.00,110.00 L110.00,110.00 Z" /><path d="M14.00,206.00 L110.00,206.00 L110.00,110.00 L14.00,110.00 Z" /><path d="M110.00,110.00 L206.00,110.00 L206.00,14.00 L110.00,14.00 Z" /><path d="M14.00,110.00 L110.00,110.00 L110.00,14.00 L14.00,14.00 Z" /></g>
   <path class="boundary" d="M14.00,206.00 L206.00,206.00 L206.00,14.00 L14.00,14.00 Z" />
-  <g class="sites"><circle class="disc" cx="158.00" cy="62.00" r="21.12" /><circle cx="158.00" cy="62.00" r="2" /><circle class="disc" cx="62.00" cy="62.00" r="21.12" /><circle cx="62.00" cy="62.00" r="2" /><circle class="disc" cx="158.00" cy="158.00" r="21.12" /><circle cx="158.00" cy="158.00" r="2" /><circle class="disc" cx="62.00" cy="158.00" r="21.12" /><circle cx="62.00" cy="158.00" r="2" /></g>
+  <g class="sites"><circle class="disc" cx="149.04" cy="149.04" r="21.12" /><circle cx="149.04" cy="149.04" r="2" /><circle class="disc" cx="70.96" cy="149.04" r="21.12" /><circle cx="70.96" cy="149.04" r="2" /><circle class="disc" cx="149.04" cy="70.96" r="21.12" /><circle cx="149.04" cy="70.96" r="2" /><circle class="disc" cx="70.96" cy="70.96" r="21.12" /><circle cx="70.96" cy="70.96" r="2" /></g>
 </svg>

@@ -105,11 +105,16 @@ export const clampToSafeRegion = (polygon: Polygon, r: number): ((p: Point) => P
       const next: Point = [q[0] + target * ux, q[1] + target * uy]
       if (!inside(next)) break
       const nextHit = nearest(next)
-      if (nextHit.dist <= bestDist) break
+      // Plateau steps are allowed (pushing off one wall of a corner leaves
+      // the other wall equally close for one iteration); only a strict
+      // regression means the local safe region is unreachable.
+      if (nextHit.dist < curHit.dist) break
       cur = next
       curHit = nextHit
-      best = next
-      bestDist = nextHit.dist
+      if (nextHit.dist > bestDist) {
+        best = next
+        bestDist = nextHit.dist
+      }
       if (nextHit.dist >= r) return next
     }
     return best

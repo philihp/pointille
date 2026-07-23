@@ -44,6 +44,68 @@ describe('pointille with radius — containment and no overlap', () => {
   })
 })
 
+describe('pointille with radius — balanced gaps', () => {
+  const bigSquare: Polygon = [
+    [0, 0],
+    [10, 0],
+    [10, 10],
+    [0, 10],
+  ]
+  const bigTriangle: Polygon = [
+    [0, 0],
+    [10, 0],
+    [5, 8.66],
+  ]
+
+  const gaps = (polygon: Polygon, n: number, r: number) => {
+    const pts = pointille(polygon, n, { radius: r })
+    const boundary = distanceToBoundary(polygon)
+    const wallGaps = pts.map((p) => boundary(p) - r)
+    const pairGap = minNearestNeighbour(pts) - 2 * r
+    return { wallGaps, pairGap }
+  }
+
+  it('square n=4 r=1.1 reaches the analytic equilibrium (all gaps ≈ 1.87)', () => {
+    // 2×2 grid equilibrium: 2·(2R − r) + 2R = 10 with r = 1.1 → R = 61/30,
+    // uniform gap g = 2(R − r) ≈ 1.867 between circles and to every wall.
+    const { wallGaps, pairGap } = gaps(bigSquare, 4, 1.1)
+    for (const g of wallGaps) assert.ok(g > 1.55 && g < 2.2, `wall gap ${g.toFixed(3)}`)
+    assert.ok(pairGap > 1.55 && pairGap < 2.2, `pair gap ${pairGap.toFixed(3)}`)
+  })
+
+  it('triangle n=4 r=1.1: no circle hugs the boundary', () => {
+    // Before balancing, two circles sat 0.07 from the edge while the
+    // smallest circle-to-circle gap was 0.51.
+    const { wallGaps, pairGap } = gaps(bigTriangle, 4, 1.1)
+    const minWall = Math.min(...wallGaps)
+    assert.ok(minWall >= 0.5 * pairGap, `minWall=${minWall.toFixed(3)} pairGap=${pairGap.toFixed(3)}`)
+    assert.ok(minWall > 0.3, `minWall=${minWall.toFixed(3)}`)
+  })
+
+  it('n=1 lands at the deepest interior point', () => {
+    const [p] = pointille(unitSquare, 1, { radius: 0.2 })
+    assert.ok(Math.hypot(p![0] - 0.5, p![1] - 0.5) < 0.05, `center at ${p!.join(',')}`)
+  })
+})
+
+describe('pointille — degenerate polygons', () => {
+  // "Triangle" with sides 5, 4, 1: 4 + 1 = 5, so the vertices are collinear
+  // and the polygon has zero area.
+  const degenerate541: Polygon = [
+    [0, 0],
+    [5, 0],
+    [4, 0],
+  ]
+
+  it('radius 0 returns [] (no interior exists)', () => {
+    assert.deepEqual(pointille(degenerate541, 5), [])
+  })
+
+  it('with a radius, throws PointilleFitError via the area pre-check', () => {
+    assert.throws(() => pointille(degenerate541, 5, { radius: 0.1 }), PointilleFitError)
+  })
+})
+
 describe('pointille with radius — determinism', () => {
   it('same inputs → same outputs', () => {
     const a = pointille(unitSquare, 9, { radius: 0.1 })
@@ -89,11 +151,11 @@ describe('separate — direct', () => {
       [0, 10],
     ]
     const r = 1
-    const out = separate(big, r)([
+    const out = separate(big, { wallInset: r, pairDistance: 2 * r })([
       [5, 5],
       [6, 5],
     ])
-    const check = verifyPacking(big, r, out, 1e-9 * 10)
+    const check = verifyPacking(big, { wallInset: r, pairDistance: 2 * r }, out, 1e-9 * 10)
     assert.ok(check.ok, `minPairwise=${check.minPairwise} minBoundary=${check.minBoundary}`)
   })
   it('resolves coincident points deterministically', () => {
@@ -104,13 +166,13 @@ describe('separate — direct', () => {
       [0, 10],
     ]
     const run = () =>
-      separate(big, 0.5)([
+      separate(big, { wallInset: 0.5, pairDistance: 1 })([
         [5, 5],
         [5, 5],
         [5, 5],
       ])
     const a = run()
-    assert.ok(verifyPacking(big, 0.5, a, 1e-8).ok)
+    assert.ok(verifyPacking(big, { wallInset: 0.5, pairDistance: 1 }, a, 1e-8).ok)
     assert.deepEqual(a, run())
   })
 })
