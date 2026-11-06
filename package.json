@@ -39,6 +39,10 @@
   ],
   "author": "Philihp Busby <philihp@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/philihp/pointille.git"
+  },
   "publishConfig": {
     "access": "public"
   },
