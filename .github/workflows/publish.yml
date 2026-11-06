@@ -1,0 +1,58 @@
+name: Publish
+
+# Stages a new version on npm when a GitHub release is published.
+#
+# The version is uploaded with a provenance attestation but is NOT installable
+# until a maintainer approves it with 2FA (`npm stage approve <stage-id>` or the
+# package's page on npmjs.com). Auth is npm trusted publishing (OIDC), so there
+# is no NPM_TOKEN secret. The trusted publisher on npm must name this file,
+# `publish.yml`, and allow `npm stage publish`.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    name: Stage on npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC token for trusted publishing and provenance
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Node 24 ships npm >= 11.15.0, the minimum for `npm stage`.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Check release tag matches package.json
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          expected="v$(node -p 'require("./package.json").version')"
+          if [ "$TAG" != "$expected" ]; then
+            echo "::error::Release tag $TAG does not match package.json version $expected"
+            exit 1
+          fi
+
+      - run: npm install --no-audit --no-fund
+
+      - run: npm test
+
+      # prepublishOnly runs the tsup build before the tarball is packed.
+      - name: Stage for publishing
+        env:
+          DIST_TAG: ${{ github.event.release.prerelease && 'next' || 'latest' }}
+        run: npm stage publish --provenance --tag "$DIST_TAG"
